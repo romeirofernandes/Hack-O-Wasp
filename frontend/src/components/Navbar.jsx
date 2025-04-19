@@ -29,7 +29,7 @@ const Navbar = () => {
         <nav className="max-w-4xl mx-auto px-2 py-1 bg-[#080808]/80 backdrop-blur-sm rounded-full border border-white/10 shadow-md">
           <div className="px-4 py-4 flex justify-between items-center">
             <Link to="/" className="text-white font-bold text-xl">
-              Clarity Ai
+              ClarityAI
             </Link>
             <div className="flex items-center gap-8">
               <Link

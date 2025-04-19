@@ -84,7 +84,7 @@ const Dashboard = () => {
   return (
     <div className="relative min-h-screen bg-[#080808] flex flex-col">
   
-      <div className="container relative z-10 mx-auto px-4 py-24 flex-grow">
+      <div className="container relative z-10 mx-auto px-4 py-14 flex-grow">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-4xl font-bold mb-8 text-white">Your Dashboard</h2>
           
