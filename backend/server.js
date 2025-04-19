@@ -1,7 +1,7 @@
 const express = require("express");
-const mongoose = require("mongoose");
 const cors = require("cors");
 const connectDB = require("./config/db");
+const uploadRoutes = require("./routes/upload");
 require("dotenv").config();
 
 const app = express();
@@ -16,6 +16,7 @@ app.use(
   })
 );
 app.use(express.json());
+app.use("/api/upload", uploadRoutes);
 
 const PORT = process.env.PORT || 8000;
 
