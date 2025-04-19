@@ -84,6 +84,7 @@ const Landing = () => {
             >
               Contact
             </a>
+            
           </div>
         </div>
       </nav>
