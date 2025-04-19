@@ -4,17 +4,19 @@ import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Upload from "./pages/Upload";
+import SpeechToText from "./pages/SpeechToText";
 import Navbar from "./components/Navbar";
 
 const App = () => {
   return (
     <BrowserRouter>
-    <Navbar/>
+      <Navbar/>
       <Routes>
         <Route path="/" element={<Landing />} />
-          <Route path="/upload" element={<Upload />} />
+        <Route path="/upload" element={<Upload />} />
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/speech-to-text" element={<SpeechToText />} />
       </Routes>
     </BrowserRouter>
   );
