@@ -500,15 +500,7 @@ const SpeechToText = () => {
               <option value="" className="bg-gray-800 text-white">Select a topic...</option>
               {topics.length > 0 && (
                 <>
-                  <optgroup label="Summary Points" className="bg-gray-800 text-white font-medium">
-                    {topics
-                      .filter(t => t.type === 'summary')
-                      .map(topic => (
-                        <option key={topic.id} value={topic.id} className="bg-gray-800 text-white">
-                          {topic.text.length > 60 ? topic.text.substring(0, 60) + '...' : topic.text}
-                        </option>
-                      ))}
-                  </optgroup>
+
                   <optgroup label="Flashcard Questions" className="bg-gray-800 text-white font-medium">
                     {topics
                       .filter(t => t.type === 'flashcard')
