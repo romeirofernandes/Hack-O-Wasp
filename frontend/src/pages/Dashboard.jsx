@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { auth } from "../firebase.config";
 import { onAuthStateChanged } from "firebase/auth";
 import { ProcessedContent } from "../components/ProcessedContent";
+import { TrashIcon } from "@heroicons/react/24/outline";
 import axios from "axios";
 
 const Dashboard = () => {
@@ -12,6 +13,23 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const modalRef = useRef(null); // ← Added ref for modal
+
+  // Add delete handler function
+  const handleDeleteDocument = async (documentId, e) => {
+    e.stopPropagation(); // Prevent triggering document click
+    try {
+      const response = await axios.delete(
+        `${import.meta.env.VITE_API_URL}/api/users/${
+          user.uid
+        }/documents/${documentId}`
+      );
+      if (response.data.success) {
+        setDocuments(documents.filter((doc) => doc.id !== documentId));
+      }
+    } catch (error) {
+      console.error("Error deleting document:", error);
+    }
+  };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -89,7 +107,6 @@ const Dashboard = () => {
         <div className="max-w-4xl mx-auto">
           <h2 className="text-4xl font-bold mb-8 text-white">Your Dashboard</h2>
 
-          {/* User Profile Card */}
           <div className="bg-white/5 backdrop-blur-sm p-8 rounded-xl border border-white/10 mb-8">
             <div className="flex items-center gap-4 mb-6">
               {user?.photoURL ? (
@@ -186,7 +203,14 @@ const Dashboard = () => {
                           {new Date(doc.uploadDate).toLocaleDateString()}
                         </p>
                       </div>
-                      <span className="text-sm text-gray-400">PDF</span>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={(e) => handleDeleteDocument(doc.id, e)}
+                          className="p-1 hover:bg-white/10 rounded-full transition-colors"
+                        >
+                          <TrashIcon className="w-5 h-5 text-gray-400 hover:text-red-500" />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -215,7 +239,7 @@ const Dashboard = () => {
                 >
                   <div
                     ref={modalRef}
-                    className="bg-[#121212] rounded-xl z-100 p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto relative"
+                    className="bg-[#121212] mt-18 rounded-xl z-100 p-6 max-w-4xl w-full max-h-[75vh] overflow-y-auto relative"
                   >
                     <div className="flex justify-between items-center mb-6">
                       <h3 className="text-2xl font-semibold text-white">
@@ -230,6 +254,7 @@ const Dashboard = () => {
                     </div>
                     <ProcessedContent
                       results={{ data: selectedDocument.content }}
+                      saved={true}
                     />
                   </div>
                 </div>
