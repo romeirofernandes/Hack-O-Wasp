@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { auth } from "../firebase.config";
 import { onAuthStateChanged } from "firebase/auth";
 import { ProcessedContent } from "../components/ProcessedContent";
+import { TrashIcon } from "@heroicons/react/24/outline";
 import axios from "axios";
 
 const Dashboard = () => {
@@ -12,6 +13,23 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const modalRef = useRef(null); // ← Added ref for modal
+
+  // Add delete handler function
+  const handleDeleteDocument = async (documentId, e) => {
+    e.stopPropagation(); // Prevent triggering document click
+    try {
+      const response = await axios.delete(
+        `${import.meta.env.VITE_API_URL}/api/users/${
+          user.uid
+        }/documents/${documentId}`
+      );
+      if (response.data.success) {
+        setDocuments(documents.filter((doc) => doc.id !== documentId));
+      }
+    } catch (error) {
+      console.error("Error deleting document:", error);
+    }
+  };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -50,7 +68,9 @@ const Dashboard = () => {
   const handleDocumentClick = async (documentId) => {
     try {
       const response = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/users/${user.uid}/documents/${documentId}`
+        `${import.meta.env.VITE_API_URL}/api/users/${
+          user.uid
+        }/documents/${documentId}`
       );
       if (response.data.success) {
         // Navigate to file page instead of opening modal
@@ -95,10 +115,9 @@ const Dashboard = () => {
   return (
     <div className="mt-16 relative min-h-screen bg-[#080808] flex flex-col">
       <div className="container relative z-10 mx-auto px-4 py-14 flex-grow">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-4xl mx-auto">
           <h2 className="text-4xl font-bold mb-8 text-white">Your Dashboard</h2>
 
-          {/* User Profile Card */}
           <div className="bg-white/5 backdrop-blur-sm p-8 rounded-xl border border-white/10 mb-8">
             <div className="flex items-center gap-4 mb-6">
               {user?.photoURL ? (
@@ -142,8 +161,10 @@ const Dashboard = () => {
             Quick Actions
           </h3>
           <div className="grid md:grid-cols-3 gap-4 mb-8">
-          <button
-                    onClick={() => navigate("/upload")} className="group bg-white/5 hover:bg-white/10 p-6 rounded-xl border border-white/10 transition-all">
+            <button
+              onClick={() => navigate("/upload")}
+              className="group bg-white/5 hover:bg-white/10 p-6 rounded-xl border border-white/10 transition-all"
+            >
               <div className="text-white text-lg mb-2 font-medium">Upload</div>
               <p className="text-gray-400 text-sm">
                 Import notes, PDFs or videos
@@ -164,7 +185,6 @@ const Dashboard = () => {
               <p className="text-gray-400 text-sm">Test your knowledge</p>
               <div className="mt-4 text-white/50 group-hover:text-white transition-colors">
                 →
-                
               </div>
             </button>
           </div>
@@ -217,41 +237,42 @@ const Dashboard = () => {
                 </div>
               </div>
 
-              {/* Document Modal */}
               {selectedDocument && (
-  <div
-    className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
-    onClick={(e) => {
-      // If the user clicks on the backdrop (not the modal itself), close it
-      if (modalRef.current && !modalRef.current.contains(e.target)) {
-        setSelectedDocument(null);
-      }
-    }}
-  >
-    <div
-      ref={modalRef}
-      className="bg-[#121212] rounded-xl z-100 p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto relative"
-    >
-      <div className="flex justify-between items-center mb-6">
-        <h3 className="text-2xl font-semibold text-white">
-          {selectedDocument.name}
-        </h3>
-        <button
-          onClick={() => setSelectedDocument(null)}
-          className="text-gray-400 hover:text-white"
-        >
-          ✕
-        </button>
-      </div>
-      <ProcessedContent results={{ data: selectedDocument.content }} />
-    </div>
-  </div>
-)}
-
+                <div
+                  className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
+                  onClick={(e) => {
+                    if (
+                      modalRef.current &&
+                      !modalRef.current.contains(e.target)
+                    ) {
+                      setSelectedDocument(null);
+                    }
+                  }}
+                >
+                  <div
+                    ref={modalRef}
+                    className="bg-[#121212] mt-18 rounded-xl z-100 p-6 max-w-4xl w-full max-h-[75vh] overflow-y-auto relative"
+                  >
+                    <div className="flex justify-between items-center mb-6">
+                      <h3 className="text-2xl font-semibold text-white">
+                        {selectedDocument.name}
+                      </h3>
+                      <button
+                        onClick={() => setSelectedDocument(null)}
+                        className="text-gray-400 hover:text-white"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                    <ProcessedContent
+                      results={{ data: selectedDocument.content }}
+                      saved={true}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-
-          
         </div>
       </div>
 

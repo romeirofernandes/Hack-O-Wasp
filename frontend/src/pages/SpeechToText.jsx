@@ -3,7 +3,6 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import ReactMarkdown from 'react-markdown';
 
-
 const SpeechToText = () => {
   const location = useLocation();
   const navigate = useNavigate();

@@ -37,24 +37,21 @@ export const ProcessedContent = ({ results, fileName }) => {
       }
 
       const documentName = generateDocumentName(results.data);
-      
+
       // Build API URL more carefully to avoid path issues
       const apiBaseUrl = import.meta.env.VITE_API_URL || "";
       const endpoint = "/api/users/save-document";
       const apiUrl = `${apiBaseUrl}${endpoint}`;
-      
+
       console.log("Saving document to:", apiUrl);
 
-      const response = await axios.post(
-        apiUrl,
-        {
-          firebaseUID: user.uid,
-          document: {
-            name: documentName,
-            content: results.data,
-          },
-        }
-      );
+      const response = await axios.post(apiUrl, {
+        firebaseUID: user.uid,
+        document: {
+          name: documentName,
+          content: results.data,
+        },
+      });
 
       if (response.data.success) {
         setSaveSuccess(true);
@@ -105,14 +102,14 @@ export const ProcessedContent = ({ results, fileName }) => {
   const handleTabClick = (tabId) => {
     if (tabId === "tts") {
       // Navigate to the speech-to-text page with the necessary data
-      navigate("/speech-to-text", { 
-        state: { 
+      navigate("/speech-to-text", {
+        state: {
           summary,
           tldr,
           title: results.title || "Document",
           flashcards,
-          quiz
-        } 
+          quiz,
+        },
       });
     } else {
       setActiveTab(tabId);
@@ -126,7 +123,7 @@ export const ProcessedContent = ({ results, fileName }) => {
           <button
             key={tab.id}
             onClick={() => handleTabClick(tab.id)}
-            className={`px-4 py-2 rounded-full transition-colors whitespace-nowrap
+            className={`px-2 py-1 mb-4 rounded-full transition-colors whitespace-nowrap
               ${
                 activeTab === tab.id
                   ? "bg-white text-black"
@@ -136,21 +133,17 @@ export const ProcessedContent = ({ results, fileName }) => {
             {tab.label}
           </button>
         ))}
-        <button
-          onClick={handleSave}
-          disabled={isSaving || saved}
-          className={`px-4 py-2 rounded-full transition-colors
-            ${
-              isSaving
-                ? "bg-gray-500"
-                : saveSuccess
-                ? "bg-green-500"
-                : "bg-white"
-            }
-            text-black`}
-        >
-          {isSaving ? "Saving..." : saveSuccess ? "Saved!" : "Save Document"}
-        </button>
+        {!saved && (
+          <button
+            onClick={handleSave}
+            disabled={isSaving}
+            className={`px-4 py-2 rounded-full transition-colors
+      ${isSaving ? "bg-gray-500" : "bg-white"}
+      text-black`}
+          >
+            {isSaving ? "Saving..." : "Save Document"}
+          </button>
+        )}
       </div>
 
       <div className="prose prose-invert max-w-none">
@@ -198,7 +191,7 @@ export const ProcessedContent = ({ results, fileName }) => {
                       key={oIndex}
                       onClick={() => handleAnswerSelect(qIndex, oIndex)}
                       disabled={showExplanations[qIndex]}
-                      className={`w-full text-left p-3 rounded-lg transition-colors ${
+                      className={`w-full text-left p-3 rounded-lg text-white transition-colors ${
                         selectedAnswers[qIndex] === oIndex
                           ? option.isCorrect
                             ? "bg-green-500/20 border-green-500/50"

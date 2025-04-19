@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter , Routes, Route } from "react-router-dom";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
@@ -11,8 +11,8 @@ import AllSavedFiles from "./pages/AllSavedFiles";
 
 const App = () => {
   return (
-    <Router>
-      <Navbar/>
+    <BrowserRouter>
+      <Navbar />
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/upload" element={<Upload />} />
@@ -22,7 +22,7 @@ const App = () => {
         <Route path="/all-files" element={<AllSavedFiles />} />
         <Route path="/speech-to-text" element={<SpeechToText />} />
       </Routes>
-    </Router>
+    </BrowserRouter>
   );
 };
 

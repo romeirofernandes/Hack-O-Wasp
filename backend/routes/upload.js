@@ -203,8 +203,6 @@ Text to analyze: ${text}`;
         });
       }
 
-      console.log("Parsed sections:", sections);  // Log parsed sections for debugging
-
       // Send the parsed data back to the frontend
       res.json({
         success: true,
