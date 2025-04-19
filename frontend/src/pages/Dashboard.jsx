@@ -10,6 +10,56 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  // Sample data for recent uploads
+  const recentUploads = [
+    {
+      id: 1,
+      title: "Biology Notes - Chapter 5",
+      date: "3 days ago",
+      type: "PDF",
+      size: "2.4 MB",
+    },
+    {
+      id: 2,
+      title: "Physics Formulas",
+      date: "5 days ago",
+      type: "DOCX",
+      size: "1.1 MB",
+    },
+    {
+      id: 3,
+      title: "Linear Algebra Lecture",
+      date: "1 week ago",
+      type: "MP4",
+      size: "45.8 MB",
+    },
+  ];
+
+  // Sample data for saved flashcards
+  const savedFlashcards = [
+    {
+      id: 1,
+      title: "Medical Terminology",
+      cards: 42,
+      lastStudied: "Today",
+      progress: 75,
+    },
+    {
+      id: 2,
+      title: "JavaScript Fundamentals",
+      cards: 28,
+      lastStudied: "Yesterday",
+      progress: 60,
+    },
+    {
+      id: 3,
+      title: "Chemistry Elements",
+      cards: 118,
+      lastStudied: "1 week ago",
+      progress: 20,
+    },
+  ];
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
@@ -70,7 +120,7 @@ const Dashboard = () => {
             
             <div className="grid md:grid-cols-3 gap-4 text-center">
               <div className="bg-white/5 p-4 rounded-lg">
-                <p className="text-gray-400 text-sm">Projects</p>
+                <p className="text-gray-400 text-sm">Uploads</p>
                 <p className="text-2xl font-bold text-white">12</p>
               </div>
               <div className="bg-white/5 p-4 rounded-lg">
@@ -78,7 +128,7 @@ const Dashboard = () => {
                 <p className="text-2xl font-bold text-white">7 days</p>
               </div>
               <div className="bg-white/5 p-4 rounded-lg">
-                <p className="text-gray-400 text-sm">Learning Score</p>
+                <p className="text-gray-400 text-sm">Mastered Cards</p>
                 <p className="text-2xl font-bold text-white">89</p>
               </div>
             </div>
@@ -104,46 +154,91 @@ const Dashboard = () => {
             </button>
           </div>
           
-          {/* Recent Activity */}
-          <h3 className="text-2xl font-semibold mb-4 text-white">Recent Activity</h3>
-          <div className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 overflow-hidden">
-            <div className="p-4 border-b border-white/10">
-              <div className="flex justify-between items-center">
-                <div>
-                  <h4 className="text-white font-medium">Machine Learning Basics</h4>
-                  <p className="text-gray-400 text-sm">PDF • 3 days ago</p>
-                </div>
-                <button className="px-3 py-1 bg-white/10 hover:bg-white/20 rounded-full text-white text-sm">
-                  Review
+          {/* New Content: Recent Uploads and Saved Flashcards in Grid Layout */}
+          <div className="grid md:grid-cols-2 gap-8 mb-8">
+            {/* Recent Uploads Section */}
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-2xl font-semibold text-white">📁 Recent uploads</h3>
+                <button className="text-gray-400 hover:text-white text-sm">
+                  View all
                 </button>
               </div>
-            </div>
-            <div className="p-4 border-b border-white/10">
-              <div className="flex justify-between items-center">
-                <div>
-                  <h4 className="text-white font-medium">Interview Preparation</h4>
-                  <p className="text-gray-400 text-sm">Notes • 5 days ago</p>
-                </div>
-                <button className="px-3 py-1 bg-white/10 hover:bg-white/20 rounded-full text-white text-sm">
-                  Review
-                </button>
+              <div className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 overflow-hidden">
+                {recentUploads.map((upload, index) => (
+                  <div 
+                    key={upload.id} 
+                    className={`p-4 hover:bg-white/10 transition-colors cursor-pointer ${
+                      index !== recentUploads.length - 1 ? "border-b border-white/10" : ""
+                    }`}
+                  >
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h4 className="text-white font-medium">{upload.title}</h4>
+                        <p className="text-gray-400 text-sm">{upload.type} • {upload.date}</p>
+                      </div>
+                      <span className="text-sm text-gray-400">{upload.size}</span>
+                    </div>
+                  </div>
+                ))}
+                <div className="p-4 border-t border-white/10">
+      <button
+        onClick={() => navigate('/upload')}
+        className="text-white hover:text-white/80 transition-colors w-full text-center flex items-center justify-center gap-2"
+      >
+        <span>Upload new file</span>
+        <span>+</span>
+      </button>
+    </div>
               </div>
             </div>
-            <div className="p-4">
-              <div className="flex justify-between items-center">
-                <div>
-                  <h4 className="text-white font-medium">Data Structures</h4>
-                  <p className="text-gray-400 text-sm">Video • 1 week ago</p>
-                </div>
-                <button className="px-3 py-1 bg-white/10 hover:bg-white/20 rounded-full text-white text-sm">
-                  Review
+            
+            {/* Saved Flashcards Section */}
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-2xl font-semibold text-white">📘 Saved flashcards</h3>
+                <button className="text-gray-400 hover:text-white text-sm">
+                  View all
                 </button>
+              </div>
+              <div className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 overflow-hidden">
+                {savedFlashcards.map((deck, index) => (
+                  <div 
+                    key={deck.id} 
+                    className={`p-4 hover:bg-white/10 transition-colors cursor-pointer ${
+                      index !== savedFlashcards.length - 1 ? "border-b border-white/10" : ""
+                    }`}
+                  >
+                    <div className="flex justify-between items-center mb-2">
+                      <h4 className="text-white font-medium">{deck.title}</h4>
+                      <span className="text-sm text-gray-400">{deck.cards} cards</span>
+                    </div>
+                    <div className="mb-2">
+                      <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-white" 
+                          style={{ width: `${deck.progress}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between text-sm text-gray-400">
+                      <span>Last studied: {deck.lastStudied}</span>
+                      <span>{deck.progress}% complete</span>
+                    </div>
+                  </div>
+                ))}
+                <div className="p-4 border-t border-white/10">
+                  <button className="text-white hover:text-white/80 transition-colors w-full text-center flex items-center justify-center gap-2">
+                    <span>Create new flashcards</span>
+                    <span>+</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
           
           {/* Upcoming Deadlines */}
-          <h3 className="text-2xl font-semibold mb-4 text-white mt-8">Upcoming Deadlines</h3>
+          <h3 className="text-2xl font-semibold mb-4 text-white">Upcoming Deadlines</h3>
           <div className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 mb-8 overflow-hidden">
             <div className="p-4 border-b border-white/10">
               <div className="flex justify-between items-center">
@@ -185,7 +280,7 @@ const Dashboard = () => {
       <footer className="relative z-10 border-t border-white/10 py-8 px-4">
         <div className="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center">
           <div className="text-gray-400 text-sm mb-4 md:mb-0">
-            © {new Date().getFullYear()} InternGuide. All rights reserved.
+            © {new Date().getFullYear()} ClarityAI. All rights reserved.
           </div>
         </div>
       </footer>
