@@ -13,6 +13,8 @@ export const ProcessedContent = ({ results, fileName }) => {
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [showExplanations, setShowExplanations] = useState({});
   const [flippedCards, setFlippedCards] = useState({});
+  const [isNameModalOpen, setIsNameModalOpen] = useState(false);
+  const [documentName, setDocumentName] = useState("");
 
   const generateDocumentName = (content) => {
     if (content.tldr) {
@@ -28,6 +30,11 @@ export const ProcessedContent = ({ results, fileName }) => {
     return `Document_${new Date().toISOString().split("T")[0]}`;
   };
 
+  const openSaveModal = () => {
+    setDocumentName(generateDocumentName(results.data));
+    setIsNameModalOpen(true);
+  };
+
   const handleSave = async () => {
     if (saved) return;
     try {
@@ -38,14 +45,9 @@ export const ProcessedContent = ({ results, fileName }) => {
         throw new Error("User not authenticated");
       }
 
-      const documentName = generateDocumentName(results.data);
-
-      // Build API URL more carefully to avoid path issues
       const apiBaseUrl = import.meta.env.VITE_API_URL || "";
       const endpoint = "/api/users/save-document";
       const apiUrl = `${apiBaseUrl}${endpoint}`;
-
-      console.log("Saving document to:", apiUrl);
 
       const response = await axios.post(apiUrl, {
         firebaseUID: user.uid,
@@ -58,6 +60,7 @@ export const ProcessedContent = ({ results, fileName }) => {
       if (response.data.success) {
         setSaveSuccess(true);
         setSaved(true);
+        setIsNameModalOpen(false);
         setTimeout(() => setSaveSuccess(false), 3000);
       }
     } catch (error) {
@@ -113,6 +116,48 @@ export const ProcessedContent = ({ results, fileName }) => {
     }));
   };
 
+  const renderSaveModal = () => {
+    if (!isNameModalOpen) return null;
+
+    return (
+      <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/50 backdrop-blur-sm">
+        <div className="bg-[#1a1a1a] rounded-xl border border-white/10 p-6 w-[400px]">
+          <h3 className="text-xl font-semibold mb-4">Save Document</h3>
+          <input
+            type="text"
+            value={documentName}
+            onChange={(e) => setDocumentName(e.target.value)}
+            placeholder="Enter document name"
+            className="w-full p-3 bg-white/5 border border-white/10 rounded-lg text-white mb-4 focus:ring-blue-500/30 focus:border-blue-500/30"
+          />
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={() => setIsNameModalOpen(false)}
+              className="px-4 py-2 text-white/70 hover:text-white transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={isSaving || !documentName.trim()}
+              className="px-4 py-2 bg-white text-black rounded-lg hover:bg-gray-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              {isSaving ? (
+                <>
+                  <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Saving...
+                </>
+              ) : "Save"}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="mt-8 bg-white/5 rounded-lg p-6">
       <div className="flex justify-between items-center mb-6">
@@ -133,30 +178,14 @@ export const ProcessedContent = ({ results, fileName }) => {
         </div>
         {!saved ? (
           <button
-            onClick={handleSave}
-            disabled={isSaving}
-            className={`px-6 py-2 rounded-full transition-all flex items-center gap-2
-              ${isSaving 
-                ? "bg-gray-500 cursor-not-allowed" 
-                : "bg-white hover:bg-gray-200"} text-black`}
+            onClick={openSaveModal}
+            className="px-6 py-2 rounded-full transition-all flex items-center gap-2 bg-white hover:bg-gray-200 text-black"
           >
-            {isSaving ? (
-              <>
-                <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Saving...
-              </>
-            ) : (
-              <>
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                  <path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h-2v5.586l-1.293-1.293z" />
-                  <path d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm10 0H6v12h8V4z" />
-                </svg>
-                Save Document
-              </>
-            )}
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h-2v5.586l-1.293-1.293z" />
+              <path d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm10 0H6v12h8V4z" />
+            </svg>
+            Save Document
           </button>
         ) : saveSuccess ? (
           <div className="text-green-400 flex items-center gap-2">
@@ -289,6 +318,7 @@ export const ProcessedContent = ({ results, fileName }) => {
         )}
 
       </div>
+      {renderSaveModal()}
     </div>
   );
 };
