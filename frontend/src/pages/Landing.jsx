@@ -54,40 +54,7 @@ const Landing = () => {
         BACK_COLOR={{ r: 0.05, g: 0.05, b: 0.05 }}
       />
 
-      <nav className="fixed top-3 left-0 right-0 z-50 bg-[#080808]/80 backdrop-blur-sm max-w-4xl mx-auto px-2 py-1 rounded-full border border-white/10">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
-          <a href="/" className="text-white font-bold text-xl">
-            ClarityAI
-          </a>
-          <div className="flex items-center gap-8">
-            <a
-              href="/"
-              className="text-gray-400 hover:text-white transition-colors"
-            >
-              Home
-            </a>
-            <a
-              href="#features"
-              className="text-gray-400 hover:text-white transition-colors"
-            >
-              Features
-            </a>
-            <a
-              href="#about"
-              className="text-gray-400 hover:text-white transition-colors"
-            >
-              About
-            </a>
-            <a
-              href="#contact"
-              className="text-gray-400 hover:text-white transition-colors"
-            >
-              Contact
-            </a>
-            
-          </div>
-        </div>
-      </nav>
+
 
       <section className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4">
         <div className="max-w-4xl mx-auto text-center">

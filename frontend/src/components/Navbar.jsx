@@ -23,35 +23,37 @@ const Navbar = () => {
   };
 
   return (
-    <div className="sticky top-0 z-50 pb-8"> {/* Added pt-3 to match the nav top-3 spacing */}
-      <nav className="fixed top-3 left-0 right-0 z-50 bg-[#080808]/80 backdrop-blur-sm max-w-4xl mx-auto px-2 py-1 rounded-full border border-white/10">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
-          <Link to="/" className="text-white font-bold text-xl">
-            Clarity Ai
-          </Link>
-          <div className="flex items-center gap-8">
-            <Link
-              to="/"
-              className="text-gray-400 hover:text-white transition-colors"
-            >
-              Home
+    <>
+      {/* Fixed navbar with solid black background that extends to the top of the viewport */}
+      <div className="fixed top-0 left-0 right-0 z-50 bg-[#080808] pt-3 pb-3">
+        <nav className="max-w-4xl mx-auto px-2 py-1 bg-[#080808]/80 backdrop-blur-sm rounded-full border border-white/10">
+          <div className="px-4 py-4 flex justify-between items-center">
+            <Link to="/" className="text-white font-bold text-xl">
+              Clarity Ai
             </Link>
-            
-            {user ? (
-              <>
-                <Link
-                  to="/dashboard"
-                  className="text-gray-400 hover:text-white transition-colors"
-                >
-                  Dashboard
-                </Link>
-                <button
-                  onClick={handleLogout}
-                  className="px-6 py-2 bg-transparent text-white border border-white/20 hover:bg-white/5 rounded-full font-medium transition-all"
-                >
-                  Logout
-                </button>
-                <div className="flex items-center gap-2">
+            <div className="flex items-center gap-8">
+              <Link
+                to="/"
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                Home
+              </Link>
+              
+              {user ? (
+                <>
+                  <Link
+                    to="/dashboard"
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
+                    Dashboard
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="px-6 py-2 bg-transparent text-white border border-white/20 hover:bg-white/5 rounded-full font-medium transition-all"
+                  >
+                    Logout
+                  </button>
+                  <div className="flex items-center gap-2">
                     {/* {user.photoURL && (
                       <img 
                         src={user.photoURL} 
@@ -59,25 +61,29 @@ const Navbar = () => {
                         className="w-8 h-8 rounded-full"
                       />
                     )} */}
-                  <span className="text-white text-sm hidden md:block">
-                    {user.displayName || user.email}
-                  </span>
-                </div>
-              </>
-            ) : (
-              <>
-                <Link
-                  to="/login"
-                  className="px-6 py-2 bg-white text-black hover:bg-gray-100 rounded-full font-medium transition-all"
-                >
-                  Sign In
-                </Link>
-              </>
-            )}
+                    <span className="text-white text-sm hidden md:block">
+                      {user.displayName || user.email}
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <Link
+                    to="/login"
+                    className="px-6 py-2 bg-white text-black hover:bg-gray-100 rounded-full font-medium transition-all"
+                  >
+                    Sign In
+                  </Link>
+                </>
+              )}
+            </div>
           </div>
-        </div>
-      </nav>
-    </div>
+        </nav>
+      </div>
+
+      {/* Spacer to prevent content from going under the navbar */}
+      <div className="h-24"></div>
+    </>
   );
 };
 
