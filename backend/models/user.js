@@ -15,13 +15,18 @@ const documentSchema = new mongoose.Schema({
       options: [{
         text: String,
         isCorrect: Boolean,
-        label: String
+        label: String,
+        userAnswer: {
+          type: String,
+          enum: ['correct', 'incorrect']
+        }
       }],
       correctAnswer: String,
       explanation: String
     }]
   }
 });
+
 
 const userSchema = new mongoose.Schema({
   firebaseUID: { type: String, required: false },

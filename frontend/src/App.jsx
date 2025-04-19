@@ -8,6 +8,7 @@ import Upload from "./pages/Upload";
 import Navbar from "./components/Navbar";
 import File from "./pages/SavedFile";
 import AllSavedFiles from "./pages/AllSavedFiles";
+import Revision from "./pages/Revision";
 
 const App = () => {
   return (
@@ -20,6 +21,7 @@ const App = () => {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/file" element={<File />} />
         <Route path="/all-files" element={<AllSavedFiles />} />
+        <Route path="/revision" element={<Revision />} />
         {/* <Route path="/speech-to-text" element={<SpeechToText />} /> */}
       </Routes>
     </BrowserRouter>
