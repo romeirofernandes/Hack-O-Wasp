@@ -3,11 +3,51 @@ import { useNavigate } from "react-router-dom";
 import { auth } from "../firebase.config";
 import { onAuthStateChanged } from "firebase/auth";
 import { SplashCursor } from "../components/AnimatedBackground";
+import { ProcessedContent } from "../components/ProcessedContent";
+import axios from "axios";
 
 const Dashboard = () => {
+  const [documents, setDocuments] = useState([]);
+  const [selectedDocument, setSelectedDocument] = useState(null);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchDocuments = async () => {
+      try {
+        if (user) {
+          const response = await axios.get(
+            `${import.meta.env.VITE_API_URL}/api/users/${user.uid}/documents`
+          );
+          if (response.data.success) {
+            setDocuments(response.data.documents);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching documents:", error);
+      }
+    };
+
+    if (user) {
+      fetchDocuments();
+    }
+  }, [user]);
+
+  const handleDocumentClick = async (documentId) => {
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/users/${
+          user.uid
+        }/documents/${documentId}`
+      );
+      if (response.data.success) {
+        setSelectedDocument(response.data.document);
+      }
+    } catch (error) {
+      console.error("Error fetching document:", error);
+    }
+  };
 
   const recentUploads = [
     {
@@ -30,31 +70,6 @@ const Dashboard = () => {
       date: "1 week ago",
       type: "MP4",
       size: "45.8 MB",
-    },
-  ];
-
-  // Sample data for saved flashcards
-  const savedFlashcards = [
-    {
-      id: 1,
-      title: "Medical Terminology",
-      cards: 42,
-      lastStudied: "Today",
-      progress: 75,
-    },
-    {
-      id: 2,
-      title: "JavaScript Fundamentals",
-      cards: 28,
-      lastStudied: "Yesterday",
-      progress: 60,
-    },
-    {
-      id: 3,
-      title: "Chemistry Elements",
-      cards: 118,
-      lastStudied: "1 week ago",
-      progress: 20,
     },
   ];
 
@@ -82,19 +97,6 @@ const Dashboard = () => {
   return (
     <div className="mt-16 relative min-h-screen bg-[#080808] flex flex-col">
       <div className="container relative z-10 mx-auto px-4 py-14 flex-grow">
-        <SplashCursor
-          SIM_RESOLUTION={64}
-          DYE_RESOLUTION={512}
-          CAPTURE_RESOLUTION={256}
-          DENSITY_DISSIPATION={2.5}
-          VELOCITY_DISSIPATION={1.5}
-          PRESSURE_ITERATIONS={10}
-          CURL={2}
-          SPLAT_RADIUS={0.15}
-          SPLAT_FORCE={4000}
-          COLOR_UPDATE_SPEED={2}
-          BACK_COLOR={{ r: 0.05, g: 0.05, b: 0.05 }}
-        />
         <div className="max-w-4xl mx-auto">
           <h2 className="text-4xl font-bold mb-8 text-white">Your Dashboard</h2>
 
@@ -180,27 +182,20 @@ const Dashboard = () => {
                 </button>
               </div>
               <div className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 overflow-hidden">
-                {recentUploads.map((upload, index) => (
+                {documents.map((doc) => (
                   <div
-                    key={upload.id}
-                    className={`p-4 hover:bg-white/10 transition-colors cursor-pointer ${
-                      index !== recentUploads.length - 1
-                        ? "border-b border-white/10"
-                        : ""
-                    }`}
+                    key={doc.id}
+                    onClick={() => handleDocumentClick(doc.id)}
+                    className="p-4 hover:bg-white/10 transition-colors cursor-pointer border-b border-white/10"
                   >
                     <div className="flex justify-between items-start">
                       <div>
-                        <h4 className="text-white font-medium">
-                          {upload.title}
-                        </h4>
+                        <h4 className="text-white font-medium">{doc.name}</h4>
                         <p className="text-gray-400 text-sm">
-                          {upload.type} • {upload.date}
+                          {new Date(doc.uploadDate).toLocaleDateString()}
                         </p>
                       </div>
-                      <span className="text-sm text-gray-400">
-                        {upload.size}
-                      </span>
+                      <span className="text-sm text-gray-400">PDF</span>
                     </div>
                   </div>
                 ))}
@@ -214,55 +209,28 @@ const Dashboard = () => {
                   </button>
                 </div>
               </div>
-            </div>
 
-            {/* Saved Flashcards Section */}
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-2xl font-semibold text-white">
-                  📘 Saved flashcards
-                </h3>
-                <button className="text-gray-400 hover:text-white text-sm">
-                  View all
-                </button>
-              </div>
-              <div className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 overflow-hidden">
-                {savedFlashcards.map((deck, index) => (
-                  <div
-                    key={deck.id}
-                    className={`p-4 hover:bg-white/10 transition-colors cursor-pointer ${
-                      index !== savedFlashcards.length - 1
-                        ? "border-b border-white/10"
-                        : ""
-                    }`}
-                  >
-                    <div className="flex justify-between items-center mb-2">
-                      <h4 className="text-white font-medium">{deck.title}</h4>
-                      <span className="text-sm text-gray-400">
-                        {deck.cards} cards
-                      </span>
+              {/* Document Content Modal */}
+              {selectedDocument && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+                  <div className="bg-[#121212] rounded-xl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                    <div className="flex justify-between items-center mb-6">
+                      <h3 className="text-2xl font-semibold text-white">
+                        {selectedDocument.name}
+                      </h3>
+                      <button
+                        onClick={() => setSelectedDocument(null)}
+                        className="text-gray-400 hover:text-white"
+                      >
+                        ✕
+                      </button>
                     </div>
-                    <div className="mb-2">
-                      <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-white"
-                          style={{ width: `${deck.progress}%` }}
-                        ></div>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between text-sm text-gray-400">
-                      <span>Last studied: {deck.lastStudied}</span>
-                      <span>{deck.progress}% complete</span>
-                    </div>
+                    <ProcessedContent
+                      results={{ data: selectedDocument.content }}
+                    />
                   </div>
-                ))}
-                <div className="p-4 border-t border-white/10">
-                  <button className="text-white hover:text-white/80 transition-colors w-full text-center flex items-center justify-center gap-2">
-                    <span>Create new flashcards</span>
-                    <span>+</span>
-                  </button>
                 </div>
-              </div>
+              )}
             </div>
           </div>
 

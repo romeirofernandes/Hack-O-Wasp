@@ -22,7 +22,7 @@ export const FileUpload = ({ onUploadStart, onUploadComplete }) => {
         });
 
         const data = await response.json();
-        onUploadComplete(data);
+        onUploadComplete(data, file.name);
       } catch (error) {
         console.error("Upload failed:", error);
       }

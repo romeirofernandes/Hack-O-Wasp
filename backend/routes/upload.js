@@ -15,9 +15,11 @@ router.post(
         return res.status(400).json({ error: "No file data received" });
       }
 
+      // Parse PDF to get raw text
       const pdfData = await pdf(req.body);
       const text = pdfData.text;
 
+      // Initialize the Gemini model
       const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
       const prompt = `Analyze the following text and provide six separate sections:
@@ -69,6 +71,7 @@ Why this is correct: Explanation here
 
 Text to analyze: ${text}`;
 
+      // Request content generation from the Gemini model
       const result = await model.generateContent(prompt);
       const response = result.response.text();
 
@@ -200,21 +203,9 @@ Text to analyze: ${text}`;
         });
       }
 
-      // Add detailed debug logging
-      console.log("Parsed sections details:", {
-        summary: `Found ${sections.summary.length} bullet points`,
-        tldr: `TLDR length: ${sections.tldr.length} chars`,
-        flashcards: `Found ${sections.flashcards.length} flashcards`,
-        flashcardsData: sections.flashcards.map((f) => ({
-          q: f.question.slice(0, 30) + "...",
-        })),
-        quiz: `Found ${sections.quiz.length} quiz questions`,
-        quizData: sections.quiz.map((q) => ({
-          q: q.question.slice(0, 30) + "...",
-        })),
-        answers: `Found ${sections.answers.length} correct answers`,
-      });
+      console.log("Parsed sections:", sections);  // Log parsed sections for debugging
 
+      // Send the parsed data back to the frontend
       res.json({
         success: true,
         data: sections,
