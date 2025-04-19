@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import ReactMarkdown from 'react-markdown';
+
 
 const SpeechToText = () => {
   const location = useLocation();
@@ -562,17 +564,21 @@ const SpeechToText = () => {
                   <div className="mt-4 border-t border-white/10 pt-4">
                     <h4 className="font-medium text-blue-400 mb-2">Key Points to Address:</h4>
                     <ul className="list-disc pl-5 space-y-2 text-blue-100/80">
-                      {topicDetails.keyPoints?.map((point, idx) => (
-                        <li key={idx}>{point}</li>
-                      ))}
+                      {Array.isArray(topicDetails.keyPoints) ? (
+                        topicDetails.keyPoints.map((point, idx) => (
+                          <li key={idx}>{typeof point === 'string' ? point : JSON.stringify(point)}</li>
+                        ))
+                      ) : (
+                        <li>No key points available</li>
+                      )}
                     </ul>
                     
-                    {topicDetails.examples && topicDetails.examples.length > 0 && (
+                    {topicDetails.examples && Array.isArray(topicDetails.examples) && topicDetails.examples.length > 0 && (
                       <div className="mt-3">
                         <h4 className="font-medium text-blue-400 mb-2">Helpful Examples:</h4>
                         <ul className="list-disc pl-5 space-y-1 text-blue-100/80">
                           {topicDetails.examples.map((example, idx) => (
-                            <li key={idx}>{example}</li>
+                            <li key={idx}>{typeof example === 'string' ? example : JSON.stringify(example)}</li>
                           ))}
                         </ul>
                       </div>
@@ -685,7 +691,6 @@ const SpeechToText = () => {
                   disabled={!transcript || isListening || isSuggestionsLoading || isProcessing}
                   className="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                 >
-
                 </button>
                 <button
                   onClick={() => handleSubmitExplanation(false)}
@@ -707,50 +712,46 @@ const SpeechToText = () => {
           </div>
           
           {feedback && (
-            <div className="mb-8">
-              <h2 className="card-header">{showOnlySuggestions ? "Suggestions:" : "Feedback:"}</h2>
-              <div className="p-6 bg-white/5 rounded-lg border border-white/10">
-                {scores && !showOnlySuggestions && (
-                  <div className="grid grid-cols-3 gap-4 mb-6">
-                    {Object.entries(scores).map(([dimension, score]) => (
-                      <div key={dimension} className="bg-white/5 p-4 rounded-lg">
-                        <div className="text-sm text-gray-400 capitalize mb-1">
-                          {dimension}
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <div className="text-2xl font-bold">{score}/10</div>
-                          <div className="flex-1">
-                            <div className="h-2 bg-white/10 rounded-full overflow-hidden">
-                              <div 
-                                className={`h-full ${
-                                  score >= 8 ? 'bg-green-500' : 
-                                  score >= 5 ? 'bg-yellow-500' : 'bg-red-500'
-                                }`} 
-                                style={{ width: `${score * 10}%` }}
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                
-                <div className="prose prose-invert max-w-none max-h-[400px] overflow-y-auto">
-                  {typeof feedback === 'string' && (
+  <div className="mb-8">
+    <h2 className="card-header">{showOnlySuggestions ? "Suggestions:" : "Feedback:"}</h2>
+    <div className="p-6 bg-white/5 rounded-lg border border-white/10">
+      
+      {scores && !showOnlySuggestions && (
+        <div className="grid grid-cols-3 gap-4 mb-6">
+          {Object.entries(scores).map(([dimension, score]) => (
+            <div key={dimension} className="bg-white/5 p-4 rounded-lg">
+              <div className="text-sm text-gray-400 capitalize mb-1">{dimension}</div>
+              <div className="flex items-center gap-3">
+                <div className="text-2xl font-bold">{score}/10</div>
+                <div className="flex-1">
+                  <div className="h-2 bg-white/10 rounded-full overflow-hidden">
                     <div 
-                      className="feedback-content"
-                      dangerouslySetInnerHTML={{
-                        __html: showOnlySuggestions 
-                          ? processFeedbackContent('Suggestions:\n' + extractSuggestions(feedback))
-                          : processFeedbackContent(feedback)
-                      }}
+                      className={`h-full ${
+                        score >= 8 ? 'bg-green-500' : 
+                        score >= 5 ? 'bg-yellow-500' : 'bg-red-500'
+                      }`} 
+                      style={{ width: `${score * 10}%` }}
                     />
-                  )}
+                  </div>
                 </div>
               </div>
             </div>
-          )}
+          ))}
+        </div>
+      )}
+
+      <div className="prose prose-invert max-w-none max-h-[400px] overflow-y-auto">
+        {typeof feedback === 'string' && (
+          <ReactMarkdown>
+            {showOnlySuggestions 
+              ? `Suggestions:\n${extractSuggestions(feedback)}` 
+              : feedback}
+          </ReactMarkdown>
+        )}
+      </div>
+    </div>
+  </div>
+)}
         </div>
       </div>
     </div>
