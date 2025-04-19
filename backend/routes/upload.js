@@ -200,21 +200,6 @@ Text to analyze: ${text}`;
         });
       }
 
-      // Add detailed debug logging
-      console.log("Parsed sections details:", {
-        summary: `Found ${sections.summary.length} bullet points`,
-        tldr: `TLDR length: ${sections.tldr.length} chars`,
-        flashcards: `Found ${sections.flashcards.length} flashcards`,
-        flashcardsData: sections.flashcards.map((f) => ({
-          q: f.question.slice(0, 30) + "...",
-        })),
-        quiz: `Found ${sections.quiz.length} quiz questions`,
-        quizData: sections.quiz.map((q) => ({
-          q: q.question.slice(0, 30) + "...",
-        })),
-        answers: `Found ${sections.answers.length} correct answers`,
-      });
-
       res.json({
         success: true,
         data: sections,

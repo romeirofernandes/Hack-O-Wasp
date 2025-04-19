@@ -5,9 +5,11 @@ import { ProcessedContent } from "../components/ProcessedContent";
 const Upload = () => {
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [fileName, setFileName] = useState('');
   const [error, setError] = useState(null);
 
-  const handleUploadComplete = (data) => {
+  const handleUploadComplete = (data, name) => {
+    setFileName(name);
     setLoading(false);
     if (data.error) {
       setError(data.error);

@@ -1,9 +1,64 @@
 import React, { useState } from "react";
+import { auth } from "../firebase.config";
+import axios from "axios";
 
-export const ProcessedContent = ({ results }) => {
+export const ProcessedContent = ({ results, fileName }) => {
+  const [saved, setSaved] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
   const [activeTab, setActiveTab] = useState("summary");
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [showExplanations, setShowExplanations] = useState({});
+
+  const generateDocumentName = (content) => {
+    if (content.tldr) {
+      // Use first few words of TLDR as title
+      const title = content.tldr.split(" ").slice(0, 5).join(" ");
+      return `${title}...`;
+    } else if (content.summary && content.summary[0]) {
+      // Use first bullet point if no TLDR
+      const title = content.summary[0].split(" ").slice(0, 5).join(" ");
+      return `${title}...`;
+    }
+    // Fallback to timestamp if no content to generate title from
+    return `Document_${new Date().toISOString().split("T")[0]}`;
+  };
+
+  const handleSave = async () => {
+    if (saved) return;
+    try {
+      setIsSaving(true);
+      const user = auth.currentUser;
+
+      if (!user) {
+        throw new Error("User not authenticated");
+      }
+
+      const documentName = generateDocumentName(results.data);
+
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/users/save-document`,
+        {
+          firebaseUID: user.uid,
+          document: {
+            name: documentName,
+            content: results.data,
+          },
+        }
+      );
+
+      if (response.data.success) {
+        setSaveSuccess(true);
+        setSaved(true);
+        setTimeout(() => setSaveSuccess(false), 3000);
+      }
+    } catch (error) {
+      console.error("Error saving document:", error);
+      setSaved(false);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const tabs = [
     { id: "summary", label: "🧾 Bullet Point Summary" },
@@ -54,6 +109,21 @@ export const ProcessedContent = ({ results }) => {
             {tab.label}
           </button>
         ))}
+        <button
+          onClick={handleSave}
+          disabled={isSaving || saved}
+          className={`px-4 py-2 rounded-full transition-colors
+            ${
+              isSaving
+                ? "bg-gray-500"
+                : saveSuccess
+                ? "bg-green-500"
+                : "bg-white"
+            }
+            text-black`}
+        >
+          {isSaving ? "Saving..." : saveSuccess ? "Saved!" : "Save Document"}
+        </button>
       </div>
 
       <div className="prose prose-invert max-w-none">
