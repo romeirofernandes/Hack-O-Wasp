@@ -24,9 +24,9 @@ const Navbar = () => {
 
   return (
     <>
-      {/* Fixed navbar with solid black background that extends to the top of the viewport */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-[#080808] pt-3 pb-3">
-        <nav className="max-w-4xl mx-auto px-2 py-1 bg-[#080808]/80 backdrop-blur-sm rounded-full border border-white/10">
+      {/* Transparent fixed wrapper to hold the pill navbar */}
+      <div className="fixed top-0 left-0 right-0 z-50 pt-3 pb-3">
+        <nav className="max-w-4xl mx-auto px-2 py-1 bg-[#080808]/80 backdrop-blur-sm rounded-full border border-white/10 shadow-md">
           <div className="px-4 py-4 flex justify-between items-center">
             <Link to="/" className="text-white font-bold text-xl">
               Clarity Ai
@@ -54,13 +54,6 @@ const Navbar = () => {
                     Logout
                   </button>
                   <div className="flex items-center gap-2">
-                    {/* {user.photoURL && (
-                      <img 
-                        src={user.photoURL} 
-                        alt="Profile" 
-                        className="w-8 h-8 rounded-full"
-                      />
-                    )} */}
                     <span className="text-white text-sm hidden md:block">
                       {user.displayName || user.email}
                     </span>
