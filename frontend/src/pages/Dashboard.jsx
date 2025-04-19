@@ -84,7 +84,7 @@ const Dashboard = () => {
   return (
     <div className="mt-16 relative min-h-screen bg-[#080808] flex flex-col">
       <div className="container relative z-10 mx-auto px-4 py-14 flex-grow">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-5xl mx-auto">
           <h2 className="text-4xl font-bold mb-8 text-white">Your Dashboard</h2>
 
           {/* User Profile Card */}
@@ -231,51 +231,7 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Upcoming Deadlines */}
-          <h3 className="text-2xl font-semibold mb-4 text-white">
-            Upcoming Deadlines
-          </h3>
-          <div className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 mb-8 overflow-hidden">
-            <div className="p-4 border-b border-white/10">
-              <div className="flex justify-between items-center">
-                <div>
-                  <h4 className="text-white font-medium">
-                    Google Technical Interview
-                  </h4>
-                  <p className="text-gray-400 text-sm">In 3 days</p>
-                </div>
-                <span className="px-3 py-1 bg-red-500/20 text-red-400 rounded-full text-sm">
-                  Urgent
-                </span>
-              </div>
-            </div>
-            <div className="p-4 border-b border-white/10">
-              <div className="flex justify-between items-center">
-                <div>
-                  <h4 className="text-white font-medium">
-                    Microsoft Resume Submission
-                  </h4>
-                  <p className="text-gray-400 text-sm">In 1 week</p>
-                </div>
-                <span className="px-3 py-1 bg-yellow-500/20 text-yellow-400 rounded-full text-sm">
-                  Important
-                </span>
-              </div>
-            </div>
-            <div className="p-4">
-              <div className="flex justify-between items-center">
-                <div>
-                  <h4 className="text-white font-medium">
-                    Amazon Coding Challenge
-                  </h4>
-                  <p className="text-gray-400 text-sm">In 2 weeks</p>
-                </div>
-                <span className="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-sm">
-                  Upcoming
-                </span>
-              </div>
-            </div>
-          </div>
+          
         </div>
       </div>
 

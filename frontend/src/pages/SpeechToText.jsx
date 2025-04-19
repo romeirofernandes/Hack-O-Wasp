@@ -12,9 +12,14 @@ const SpeechToText = () => {
   const [interimTranscript, setInterimTranscript] = useState("");
   const [feedback, setFeedback] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [score, setScore] = useState(null);
+  const [scores, setScores] = useState(null);  // Add this line
   const [selectedTopic, setSelectedTopic] = useState("");
   const [error, setError] = useState("");
+  const [topicDetails, setTopicDetails] = useState(null);
+  const [loadingTopicDetails, setLoadingTopicDetails] = useState(false);
+  const [showOnlySuggestions, setShowOnlySuggestions] = useState(false);
+  const [isSuggestionsLoading, setIsSuggestionsLoading] = useState(false);
+  const [showHints, setShowHints] = useState(false); // Add this state for controlling hint visibility
   
   // Create topics array properly to ensure dropdown works
   const topics = [
@@ -205,10 +210,35 @@ const SpeechToText = () => {
     }
   };
   
-  const handleTopicChange = (e) => {
-    setSelectedTopic(e.target.value);
+  const getTopicEnhancement = async (topicText) => {
+    try {
+      setLoadingTopicDetails(true);
+      
+      // Fix the API endpoint path to match the server.js route mounting
+      const response = await axios.post('http://localhost:8000/api/transcribe/enhance-topic', {
+        topic: topicText,
+        title
+      });
+      
+      return response.data;
+    } catch (err) {
+      console.error('Error enhancing topic:', err);
+      return null;
+    } finally {
+      setLoadingTopicDetails(false);
+    }
+  };
+  
+  const handleTopicChange = async (e) => {
+    const newTopicId = e.target.value;
+    setSelectedTopic(newTopicId);
     setFeedback(null);
-    setScore(null);
+    setScores(null); // Changed from setScore to setScores
+    setTopicDetails(null);
+    setShowHints(false); // Hide hints when topic changes
+    
+    // We no longer fetch topic details immediately here
+    // They will be fetched only when the hint button is clicked
   };
 
   const getSelectedTopicText = () => {
@@ -216,41 +246,55 @@ const SpeechToText = () => {
     return topic ? topic.text : "";
   };
   
-  const handleSubmitExplanation = async () => {
+  const handleSubmitExplanation = async (suggestionsOnly = false) => {
     if (!transcript.trim()) {
       setError("Please record or type an explanation first");
       return;
     }
     
-    setIsProcessing(true);
+    if (suggestionsOnly) {
+      setIsSuggestionsLoading(true);
+    } else {
+      setIsProcessing(true);
+    }
     setError("");
     
     try {
-      // Get the selected topic text
       const topicText = getSelectedTopicText();
       
-      // Send transcript to backend for evaluation
       const response = await axios.post('http://localhost:8000/api/transcribe', {
         transcript,
         topic: topicText,
         title
       });
       
-      setFeedback(response.data.feedback);
-      setScore(response.data.score);
+      if (suggestionsOnly) {
+        setShowOnlySuggestions(true);
+        setFeedback(response.data.feedback);
+        setScores(null);
+      } else {
+        setShowOnlySuggestions(false);
+        setFeedback(response.data.feedback);
+        setScores(response.data.scores);
+      }
     } catch (err) {
       console.error('Error submitting transcription:', err);
       setError(`Failed to analyze your explanation: ${err.message || "Unknown error"}`);
     } finally {
-      setIsProcessing(false);
+      if (suggestionsOnly) {
+        setIsSuggestionsLoading(false);
+      } else {
+        setIsProcessing(false);
+      }
     }
   };
-  
+
   const handleReset = () => {
     setTranscript("");
     setInterimTranscript("");
     setFeedback(null);
-    setScore(null);
+    setScores(null);  // Add this line
+    setShowOnlySuggestions(false);
   };
   
   // Handle manual transcript input as a fallback
@@ -300,14 +344,134 @@ const SpeechToText = () => {
           66% { content: '..'; }
           100% { content: '...'; }
         }
+        
+        /* Consistent styling for the entire page */
+        .card {
+          @apply bg-white/5 backdrop-blur-sm rounded-xl border border-white/10;
+        }
+        
+        .card-header {
+          @apply text-xl font-semibold mb-4;
+        }
+        
+        .btn-primary {
+          @apply px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-full font-medium transition-all;
+        }
+        
+        .btn-secondary {
+          @apply px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-full font-medium transition-all;
+        }
+        
+        .btn-white {
+          @apply px-6 py-3 bg-white text-black hover:bg-gray-200 rounded-lg font-medium transition-all;
+        }
+        
+        .input-field {
+          @apply bg-white/10 border border-white/20 rounded-lg text-white focus:ring-white/30 focus:border-white/30;
+        }
+        
+        /* Style the feedbacks and markdown content */
+        .feedback-content h1 {
+          @apply text-3xl font-bold mt-7 mb-4;
+        }
+        
+        .feedback-content h2 {
+          @apply text-2xl font-bold mt-6 mb-3;
+        }
+        
+        .feedback-content h3 {
+          @apply text-xl font-semibold mt-5 mb-2;
+        }
+        
+        .feedback-content ul {
+          @apply list-disc pl-5 space-y-1 my-3;
+        }
+        
+        .feedback-content ol {
+          @apply list-decimal pl-5 space-y-1 my-3;
+        }
+        
+        .feedback-content p {
+          @apply mb-4;
+        }
+        
+        .feedback-content strong {
+          @apply font-bold;
+        }
+        
+        .feedback-content em {
+          @apply italic;
+        }
+        
+        .feedback-content hr {
+          @apply border-white/20 my-4;
+        }
       `
     }} />
   );
   
+  // Update feedback content processing
+  const processFeedbackContent = (content) => {
+    // Remove score sections since we display them separately in the UI
+    content = content.replace(/^SCORES[\s\S]*?(?=\n\n)/gm, '');
+    content = content.replace(/^(?:\d+\.\s*)?(?:Understanding|Application|Clarity):\s*\d+.*\n*/gm, '');
+    
+    // Clean up and format the content
+    return content
+      // Remove numbered prefixes from main sections
+      .replace(/^\d+\.\s+(Score:|Feedback:|Constructive\s+Feedback:|Strengths:|Areas for Improvement:|Suggestions:)/gm, '$1')
+      
+      // Process sections with stars
+      .replace(/\*{3,}/g, '<hr class="border-white/20 my-4" />')
+      
+      // Format headers
+      .replace(/^(Strengths:|Areas for Improvement:|Suggestions:)(.*$)/gm, '<h3 class="text-xl font-semibold mt-5 mb-2">$1$2</h3>')
+      .replace(/^Constructive Feedback:(.*)$/gm, '<h2 class="text-2xl font-bold mt-6 mb-3">Feedback$1</h2>')
+      .replace(/^Feedback:(.*)$/gm, '<h2 class="text-2xl font-bold mt-6 mb-3">Feedback$1</h2>')
+      .replace(/^### (.*$)/gm, '<h3 class="text-xl font-semibold mt-5 mb-2">$1</h3>')
+      .replace(/^## (.*)$/gm, '<h2 class="text-2xl font-bold mt-6 mb-3">$1</h2>')
+      .replace(/^# (.*)$/gm, '<h1 class="text-3xl font-bold mt-7 mb-4">$1</h1>')
+      // ...rest of your content processing...
+  };
+
+  // Extract only suggestions from feedback
+  const extractSuggestions = (feedback) => {
+    const suggestionsPattern = /suggestions:(?:\s*\n)?((?:.|[\r\n])*?)(?:\n\s*\n|$)/i;
+    const match = feedback.match(suggestionsPattern);
+    
+    if (match && match[1]) {
+      return match[1].trim();
+    }
+    return "No specific suggestions were provided.";
+  };
+
+  // Add a function to handle the hint button click
+  const toggleHints = async () => {
+    if (topicDetails) {
+      // If we already have the details, just toggle visibility
+      setShowHints(prev => !prev);
+    } else {
+      // If we don't have details yet, fetch them first
+      if (!selectedTopic) {
+        setError("Please select a topic first");
+        return;
+      }
+      
+      const topic = topics.find(t => t.id === selectedTopic);
+      if (topic) {
+        const enhancedTopic = await getTopicEnhancement(topic.text);
+        if (enhancedTopic) {
+          setTopicDetails(enhancedTopic);
+          setShowHints(true);
+        }
+      }
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-[#080808] text-white p-6">
+    <div className="min-h-screen bg-[#080808] text-white p-6 pt-24">
       <PulseAnimation />
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         <button 
           onClick={() => navigate(-1)} 
           className="mb-6 flex items-center text-white/70 hover:text-white"
@@ -321,32 +485,33 @@ const SpeechToText = () => {
         <h1 className="text-4xl font-bold mb-2">Feynman Technique</h1>
         <p className="text-lg text-gray-400 mb-8">Explain concepts in your own words and get AI feedback</p>
         
-        <div className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 p-8">
+        <div className="card p-8">
           <div className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">Choose a topic to explain:</h2>
+            <h2 className="card-header">Choose a topic to explain:</h2>
             <select
               value={selectedTopic}
               onChange={handleTopicChange}
               disabled={isListening || isProcessing}
-              className="w-full py-3 px-4 bg-white/10 border border-white/20 rounded-lg text-white focus:ring-white/30 focus:border-white/30"
+              className="w-full py-3 px-4 input-field"
+              style={{ colorScheme: 'dark' }}
             >
-              <option value="">Select a topic...</option>
+              <option value="" className="bg-gray-800 text-white">Select a topic...</option>
               {topics.length > 0 && (
                 <>
-                  <optgroup label="Summary Points">
+                  <optgroup label="Summary Points" className="bg-gray-800 text-white font-medium">
                     {topics
                       .filter(t => t.type === 'summary')
                       .map(topic => (
-                        <option key={topic.id} value={topic.id}>
+                        <option key={topic.id} value={topic.id} className="bg-gray-800 text-white">
                           {topic.text.length > 60 ? topic.text.substring(0, 60) + '...' : topic.text}
                         </option>
                       ))}
                   </optgroup>
-                  <optgroup label="Flashcard Questions">
+                  <optgroup label="Flashcard Questions" className="bg-gray-800 text-white font-medium">
                     {topics
                       .filter(t => t.type === 'flashcard')
                       .map(topic => (
-                        <option key={topic.id} value={topic.id}>
+                        <option key={topic.id} value={topic.id} className="bg-gray-800 text-white">
                           {topic.text.length > 60 ? topic.text.substring(0, 60) + '...' : topic.text}
                         </option>
                       ))}
@@ -364,9 +529,56 @@ const SpeechToText = () => {
           
           {selectedTopic && (
             <div className="mb-8">
-              <h3 className="text-lg font-medium mb-2">Selected Topic:</h3>
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-lg font-medium">Selected Topic:</h3>
+                <div className="flex items-center gap-2">
+                  {loadingTopicDetails && (
+                    <span className="text-sm text-blue-400 flex items-center">
+                      <svg className="animate-spin h-4 w-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Loading hints...
+                    </span>
+                  )}
+                  <button 
+                    onClick={toggleHints} 
+                    className="text-sm px-3 py-1 rounded bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 flex items-center"
+                    disabled={loadingTopicDetails}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    {showHints ? "Hide Hints" : "Show Hints"}
+                  </button>
+                </div>
+              </div>
+              
               <div className="p-4 bg-white/10 rounded-lg">
-                <p>{getSelectedTopicText()}</p>
+                <p className="mb-4">{getSelectedTopicText()}</p>
+
+                {/* Show topic details only when showHints is true */}
+                {showHints && topicDetails && (
+                  <div className="mt-4 border-t border-white/10 pt-4">
+                    <h4 className="font-medium text-blue-400 mb-2">Key Points to Address:</h4>
+                    <ul className="list-disc pl-5 space-y-2 text-blue-100/80">
+                      {topicDetails.keyPoints?.map((point, idx) => (
+                        <li key={idx}>{point}</li>
+                      ))}
+                    </ul>
+                    
+                    {topicDetails.examples && topicDetails.examples.length > 0 && (
+                      <div className="mt-3">
+                        <h4 className="font-medium text-blue-400 mb-2">Helpful Examples:</h4>
+                        <ul className="list-disc pl-5 space-y-1 text-blue-100/80">
+                          {topicDetails.examples.map((example, idx) => (
+                            <li key={idx}>{example}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -374,7 +586,7 @@ const SpeechToText = () => {
           <div className="mb-8">
             <div className="flex justify-between items-center mb-3">
               <div className="flex items-center">
-                <h2 className="text-xl font-semibold">Your Explanation:</h2>
+                <h2 className="card-header mb-0">Your Explanation:</h2>
                 {isListening && (
                   <div className="ml-3 px-2 py-1 bg-red-500/20 text-red-400 rounded-md flex items-center text-xs">
                     <span className="live-indicator"></span>
@@ -386,7 +598,7 @@ const SpeechToText = () => {
                 <button
                   onClick={toggleListening}
                   disabled={isProcessing || !selectedTopic}
-                  className={`px-4 py-2 rounded-full font-medium flex items-center gap-2 
+                  className={`flex items-center gap-2 px-4 py-2 rounded-full font-medium transition-all
                     ${isListening ? 
                       'bg-red-500 hover:bg-red-600' : 
                       'bg-blue-500 hover:bg-blue-600'
@@ -412,7 +624,7 @@ const SpeechToText = () => {
                 <button
                   onClick={handleReset}
                   disabled={!transcript && !interimTranscript || isListening || isProcessing}
-                  className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-full font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Reset
                 </button>
@@ -427,7 +639,7 @@ const SpeechToText = () => {
             
             <div className="mb-4 rounded-lg border bg-white/5 border-white/10 overflow-hidden">
               {/* Transcript Display Area */}
-              <div className="p-4">
+              <div className="p-4 max-h-[200px] overflow-y-auto">
                 {transcript && (
                   <div className="text-white mb-2">
                     {transcript}
@@ -467,110 +679,78 @@ const SpeechToText = () => {
                   <span>{transcript.split(' ').length} words</span>
                 )}
               </div>
-              <button
-                onClick={handleSubmitExplanation}
-                disabled={!transcript || isListening || isProcessing}
-                className="px-6 py-3 bg-white text-black hover:bg-gray-200 rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-              >
-                {isProcessing ? (
-                  <>
-                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-black" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Analyzing...
-                  </>
-                ) : "Get Feedback"}
-              </button>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => handleSubmitExplanation(true)}
+                  disabled={!transcript || isListening || isSuggestionsLoading || isProcessing}
+                  className="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                >
+
+                </button>
+                <button
+                  onClick={() => handleSubmitExplanation(false)}
+                  disabled={!transcript || isListening || isProcessing || isSuggestionsLoading}
+                  className="btn-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                >
+                  {isProcessing ? (
+                    <>
+                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-black" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Analyzing...
+                    </>
+                  ) : "Get Full Feedback"}
+                </button>
+              </div>
             </div>
           </div>
           
-{feedback && (
-  <div className="mb-8">
-    <h2 className="text-xl font-semibold mb-4">Feedback:</h2>
-    <div className="p-6 bg-white/5 rounded-lg border border-white/10">
-      {score !== null && (
-        <div className="mb-6 flex items-center">
-          <div className="mr-4">
-            <div className="text-2xl font-bold">{score}/10</div>
-            <div className="text-sm text-gray-400">Understanding Score</div>
-          </div>
-          <div className="flex-1">
-            <div className="h-2 bg-white/10 rounded-full overflow-hidden">
-              <div 
-                className={`h-full ${
-                  score >= 8 ? 'bg-green-500' : 
-                  score >= 5 ? 'bg-yellow-500' : 'bg-red-500'
-                }`} 
-                style={{ width: `${score * 10}%` }}
-              ></div>
+          {feedback && (
+            <div className="mb-8">
+              <h2 className="card-header">{showOnlySuggestions ? "Suggestions:" : "Feedback:"}</h2>
+              <div className="p-6 bg-white/5 rounded-lg border border-white/10">
+                {scores && !showOnlySuggestions && (
+                  <div className="grid grid-cols-3 gap-4 mb-6">
+                    {Object.entries(scores).map(([dimension, score]) => (
+                      <div key={dimension} className="bg-white/5 p-4 rounded-lg">
+                        <div className="text-sm text-gray-400 capitalize mb-1">
+                          {dimension}
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="text-2xl font-bold">{score}/10</div>
+                          <div className="flex-1">
+                            <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                              <div 
+                                className={`h-full ${
+                                  score >= 8 ? 'bg-green-500' : 
+                                  score >= 5 ? 'bg-yellow-500' : 'bg-red-500'
+                                }`} 
+                                style={{ width: `${score * 10}%` }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                <div className="prose prose-invert max-w-none max-h-[400px] overflow-y-auto">
+                  {typeof feedback === 'string' && (
+                    <div 
+                      className="feedback-content"
+                      dangerouslySetInnerHTML={{
+                        __html: showOnlySuggestions 
+                          ? processFeedbackContent('Suggestions:\n' + extractSuggestions(feedback))
+                          : processFeedbackContent(feedback)
+                      }}
+                    />
+                  )}
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
-      
-      <div className="prose prose-invert max-w-none">
-        {typeof feedback === 'string' && (
-          <div className="feedback-content">
-            {/* Process the feedback text into properly formatted HTML */}
-            {(() => {
-              // Start by preparing the content
-              let content = feedback;
-              
-              // Process sections with stars
-              content = content.replace(/\*{3,}/g, '<hr class="border-white/20 my-4" />');
-              
-              // Process headers
-              content = content.replace(/^### (.*$)/gim, '<h3 class="text-xl font-semibold mt-5 mb-2">$1</h3>');
-              content = content.replace(/^## (.*$)/gim, '<h2 class="text-2xl font-bold mt-6 mb-3">$1</h2>');
-              content = content.replace(/^# (.*$)/gim, '<h1 class="text-3xl font-bold mt-7 mb-4">$1</h1>');
-              
-              // Process bold and italic
-              content = content.replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold">$1</strong>');
-              content = content.replace(/\*(.*?)\*/g, '<em class="italic">$1</em>');
-              
-              // Process unordered and ordered lists
-              // First, identify list blocks
-              content = content.replace(
-                /((?:^\s*[\*\-]\s+.*$\n?)+)/gm,
-                '<ul class="list-disc pl-5 space-y-1 my-3">$1</ul>'
-              );
-              content = content.replace(
-                /((?:^\s*\d+\.\s+.*$\n?)+)/gm,
-                '<ol class="list-decimal pl-5 space-y-1 my-3">$1</ol>'
-              );
-              
-              // Then process individual list items
-              content = content.replace(/^\s*[\*\-]\s+(.*$)/gim, '<li>$1</li>');
-              content = content.replace(/^\s*\d+\.\s+(.*$)/gim, '<li>$1</li>');
-              
-              // Process paragraphs
-              content = content.split('\n\n').join('</p><p class="mb-4">');
-              
-              // Process line breaks within paragraphs
-              content = content.split('\n').join('<br/>');
-              
-              // Wrap the entire content
-              if (!content.startsWith('<h1') && !content.startsWith('<h2') && 
-                  !content.startsWith('<h3') && !content.startsWith('<ul') && 
-                  !content.startsWith('<ol') && !content.startsWith('<p')) {
-                content = '<p class="mb-4">' + content;
-              }
-              
-              if (!content.endsWith('</p>') && !content.endsWith('</ul>') && 
-                  !content.endsWith('</ol>') && !content.endsWith('</h1>') && 
-                  !content.endsWith('</h2>') && !content.endsWith('</h3>')) {
-                content = content + '</p>';
-              }
-              
-              return { __html: content };
-            })()}
-          </div>
-        )}
-      </div>
-    </div>
-  </div>
-)}
+          )}
         </div>
       </div>
     </div>

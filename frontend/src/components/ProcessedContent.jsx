@@ -37,9 +37,16 @@ export const ProcessedContent = ({ results, fileName }) => {
       }
 
       const documentName = generateDocumentName(results.data);
+      
+      // Build API URL more carefully to avoid path issues
+      const apiBaseUrl = import.meta.env.VITE_API_URL || "";
+      const endpoint = "/api/users/save-document";
+      const apiUrl = `${apiBaseUrl}${endpoint}`;
+      
+      console.log("Saving document to:", apiUrl);
 
       const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/users/save-document`,
+        apiUrl,
         {
           firebaseUID: user.uid,
           document: {
