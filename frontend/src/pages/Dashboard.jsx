@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { auth } from "../firebase.config";
 import { onAuthStateChanged } from "firebase/auth";
-import { SplashCursor } from "../components/AnimatedBackground";
 import { ProcessedContent } from "../components/ProcessedContent";
 import axios from "axios";
 
@@ -48,30 +47,6 @@ const Dashboard = () => {
       console.error("Error fetching document:", error);
     }
   };
-
-  const recentUploads = [
-    {
-      id: 1,
-      title: "Biology Notes - Chapter 5",
-      date: "3 days ago",
-      type: "PDF",
-      size: "2.4 MB",
-    },
-    {
-      id: 2,
-      title: "Physics Formulas",
-      date: "5 days ago",
-      type: "DOCX",
-      size: "1.1 MB",
-    },
-    {
-      id: 3,
-      title: "Linear Algebra Lecture",
-      date: "1 week ago",
-      type: "MP4",
-      size: "45.8 MB",
-    },
-  ];
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
