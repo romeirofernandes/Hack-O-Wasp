@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { auth } from "../firebase.config";
 import { onAuthStateChanged } from "firebase/auth";
@@ -12,6 +12,20 @@ const Dashboard = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const modalRef = useRef(null); // ← Added ref for modal
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
+      } else {
+        navigate("/login");
+      }
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [navigate]);
 
   useEffect(() => {
     const fetchDocuments = async () => {
@@ -37,9 +51,7 @@ const Dashboard = () => {
   const handleDocumentClick = async (documentId) => {
     try {
       const response = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/users/${
-          user.uid
-        }/documents/${documentId}`
+        `${import.meta.env.VITE_API_URL}/api/users/${user.uid}/documents/${documentId}`
       );
       if (response.data.success) {
         setSelectedDocument(response.data.document);
@@ -48,43 +60,6 @@ const Dashboard = () => {
       console.error("Error fetching document:", error);
     }
   };
-
-  const recentUploads = [
-    {
-      id: 1,
-      title: "Biology Notes - Chapter 5",
-      date: "3 days ago",
-      type: "PDF",
-      size: "2.4 MB",
-    },
-    {
-      id: 2,
-      title: "Physics Formulas",
-      date: "5 days ago",
-      type: "DOCX",
-      size: "1.1 MB",
-    },
-    {
-      id: 3,
-      title: "Linear Algebra Lecture",
-      date: "1 week ago",
-      type: "MP4",
-      size: "45.8 MB",
-    },
-  ];
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      if (currentUser) {
-        setUser(currentUser);
-      } else {
-        navigate("/login");
-      }
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, [navigate]);
 
   if (loading) {
     return (
@@ -165,13 +140,13 @@ const Dashboard = () => {
               <p className="text-gray-400 text-sm">Test your knowledge</p>
               <div className="mt-4 text-white/50 group-hover:text-white transition-colors">
                 →
+                
               </div>
             </button>
           </div>
 
-          {/* New Content: Recent Uploads and Saved Flashcards in Grid Layout */}
+          {/* Recent Uploads */}
           <div className="grid md:grid-cols-2 gap-8 mb-8">
-            {/* Recent Uploads Section */}
             <div>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-2xl font-semibold text-white">
@@ -210,27 +185,37 @@ const Dashboard = () => {
                 </div>
               </div>
 
-              {/* Document Content Modal */}
+              {/* Document Modal */}
               {selectedDocument && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-                  <div className="bg-[#121212] rounded-xl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-                    <div className="flex justify-between items-center mb-6">
-                      <h3 className="text-2xl font-semibold text-white">
-                        {selectedDocument.name}
-                      </h3>
-                      <button
-                        onClick={() => setSelectedDocument(null)}
-                        className="text-gray-400 hover:text-white"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                    <ProcessedContent
-                      results={{ data: selectedDocument.content }}
-                    />
-                  </div>
-                </div>
-              )}
+  <div
+    className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
+    onClick={(e) => {
+      // If the user clicks on the backdrop (not the modal itself), close it
+      if (modalRef.current && !modalRef.current.contains(e.target)) {
+        setSelectedDocument(null);
+      }
+    }}
+  >
+    <div
+      ref={modalRef}
+      className="bg-[#121212] rounded-xl z-100 p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto relative"
+    >
+      <div className="flex justify-between items-center mb-6">
+        <h3 className="text-2xl font-semibold text-white">
+          {selectedDocument.name}
+        </h3>
+        <button
+          onClick={() => setSelectedDocument(null)}
+          className="text-gray-400 hover:text-white"
+        >
+          ✕
+        </button>
+      </div>
+      <ProcessedContent results={{ data: selectedDocument.content }} />
+    </div>
+  </div>
+)}
+
             </div>
           </div>
 
