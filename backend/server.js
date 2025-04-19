@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const connectDB = require("./config/db");
 const uploadRoutes = require("./routes/upload");
+const transcribeRoutes = require("./routes/transcribe");
 require("dotenv").config();
 
 const app = express();
@@ -18,8 +19,12 @@ app.use(
     credentials: true,
   })
 );
-app.use(express.json());
+// Increase JSON payload size limit to 10MB
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
 app.use("/api/upload", uploadRoutes);
+app.use("/api/transcribe", transcribeRoutes);
 
 // Use routes
 app.use("/api/users", userRoutes);

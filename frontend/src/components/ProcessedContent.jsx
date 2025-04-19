@@ -1,6 +1,8 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export const ProcessedContent = ({ results }) => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("summary");
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [showExplanations, setShowExplanations] = useState({});
@@ -10,6 +12,7 @@ export const ProcessedContent = ({ results }) => {
     { id: "tldr", label: "🪄 TL;DR" },
     { id: "flashcards", label: "🃏 Flashcards" },
     { id: "quiz", label: "📝 Quiz" },
+    { id: "tts", label: "🎙️ Text to Speech" },
   ];
 
   if (!results?.data) {
@@ -37,13 +40,30 @@ export const ProcessedContent = ({ results }) => {
     }));
   };
 
+  const handleTabClick = (tabId) => {
+    if (tabId === "tts") {
+      // Navigate to the speech-to-text page with the necessary data
+      navigate("/speech-to-text", { 
+        state: { 
+          summary,
+          tldr,
+          title: results.title || "Document",
+          flashcards,
+          quiz
+        } 
+      });
+    } else {
+      setActiveTab(tabId);
+    }
+  };
+
   return (
     <div className="mt-8 bg-white/5 rounded-lg p-6">
       <div className="flex gap-4 mb-6 overflow-x-auto">
         {tabs.map((tab) => (
           <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
+            onClick={() => handleTabClick(tab.id)}
             className={`px-4 py-2 rounded-full transition-colors whitespace-nowrap
               ${
                 activeTab === tab.id
