@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { loginWithGoogle } from "../Api/Auth";
+import { loginWithGoogle } from "../api/Auth";
 import { SplashCursor } from "../components/AnimatedBackground";
 
 const Login = () => {
