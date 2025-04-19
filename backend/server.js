@@ -20,8 +20,6 @@ app.use(
 );
 app.use(express.json());
 app.use("/api/upload", uploadRoutes);
-
-// Use routes
 app.use("/api/users", userRoutes);
 
 // Basic route for testing

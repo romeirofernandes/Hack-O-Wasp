@@ -5,9 +5,11 @@ import { ProcessedContent } from "../components/ProcessedContent";
 const Upload = () => {
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [fileName, setFileName] = useState('');
   const [error, setError] = useState(null);
 
-  const handleUploadComplete = (data) => {
+  const handleUploadComplete = (data, name) => {
+    setFileName(name);
     setLoading(false);
     if (data.error) {
       setError(data.error);
@@ -19,7 +21,7 @@ const Upload = () => {
   };
 
   return (
-    <main className="min-h-screen bg-[#080808] text-white p-8">
+    <main className="mt-18 min-h-screen bg-[#080808] text-white p-8">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-4xl font-bold mb-8">Document Analysis</h1>
 

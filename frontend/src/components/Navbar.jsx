@@ -26,7 +26,7 @@ const Navbar = () => {
     <>
       {/* Transparent fixed wrapper to hold the pill navbar */}
       <div className="fixed top-0 left-0 right-0 z-50 pt-3 pb-3">
-        <nav className="max-w-4xl mx-auto px-2 py-1 bg-[#080808]/80 backdrop-blur-sm rounded-full border border-white/10 shadow-md">
+        <nav className="max-w-4xl mx-auto px-2 bg-[#080808]/80 backdrop-blur-sm rounded-full border border-white/10 shadow-md">
           <div className="px-4 py-4 flex justify-between items-center">
             <Link to="/" className="text-white font-bold text-xl">
               ClarityAI
@@ -73,9 +73,6 @@ const Navbar = () => {
           </div>
         </nav>
       </div>
-
-      {/* Spacer to prevent content from going under the navbar */}
-      <div className="h-24"></div>
     </>
   );
 };
