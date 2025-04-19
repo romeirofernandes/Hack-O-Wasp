@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { auth } from "../firebase.config";
 import { onAuthStateChanged } from "firebase/auth";
 import { ProcessedContent } from "../components/ProcessedContent";
-import { TrashIcon } from "@heroicons/react/24/outline";
 import axios from "axios";
 
 const Dashboard = () => {

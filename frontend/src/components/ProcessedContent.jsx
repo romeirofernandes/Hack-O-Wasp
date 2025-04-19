@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { auth } from "../firebase.config";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { SpeechToTextEmbed } from "./SpeechToTextEmbed"; // Add this import
 
 export const ProcessedContent = ({ results, fileName }) => {
   const [saved, setSaved] = useState(false);
@@ -11,6 +12,7 @@ export const ProcessedContent = ({ results, fileName }) => {
   const [activeTab, setActiveTab] = useState("summary");
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [showExplanations, setShowExplanations] = useState({});
+  const [flippedCards, setFlippedCards] = useState({});
 
   const generateDocumentName = (content) => {
     if (content.tldr) {
@@ -67,11 +69,11 @@ export const ProcessedContent = ({ results, fileName }) => {
   };
 
   const tabs = [
-    { id: "summary", label: "🧾 Bullet Point Summary" },
-    { id: "tldr", label: "🪄 TL;DR" },
-    { id: "flashcards", label: "🃏 Flashcards" },
-    { id: "quiz", label: "📝 Quiz" },
-    { id: "tts", label: "🎙️ Text to Speech" },
+    { id: "summary", label: "📝 Summary" },
+    { id: "tldr", label: "⚡ TLDR" },
+    { id: "flashcards", label: "🔄 Flashcards" },
+    { id: "quiz", label: "❓ Quiz" },
+    { id: "feynman", label: "🎤 Practice Speaking" }  // Changed from "tts"
   ];
 
   if (!results?.data) {
@@ -100,50 +102,70 @@ export const ProcessedContent = ({ results, fileName }) => {
   };
 
   const handleTabClick = (tabId) => {
-    if (tabId === "tts") {
-      // Navigate to the speech-to-text page with the necessary data
-      navigate("/speech-to-text", {
-        state: {
-          summary,
-          tldr,
-          title: results.title || "Document",
-          flashcards,
-          quiz,
-        },
-      });
-    } else {
-      setActiveTab(tabId);
-    }
+    // Remove navigation logic and just set the active tab
+    setActiveTab(tabId);
+  };
+
+  const toggleCard = (idx) => {
+    setFlippedCards(prev => ({
+      ...prev,
+      [idx]: !prev[idx]
+    }));
   };
 
   return (
     <div className="mt-8 bg-white/5 rounded-lg p-6">
-      <div className="flex gap-4 mb-6 overflow-x-auto">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => handleTabClick(tab.id)}
-            className={`px-2 py-1 mb-4 rounded-full transition-colors whitespace-nowrap
-              ${
-                activeTab === tab.id
+      <div className="flex justify-between items-center mb-6">
+        <div className="flex gap-4 overflow-x-auto">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => handleTabClick(tab.id)}
+              className={`px-4 py-2 rounded-full transition-colors whitespace-nowrap
+                ${activeTab === tab.id
                   ? "bg-white text-black"
-                  : "text-white/70 hover:text-white"
-              }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-        {!saved && (
+                  : "text-white/70 hover:text-white hover:bg-white/10"
+                }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+        {!saved ? (
           <button
             onClick={handleSave}
             disabled={isSaving}
-            className={`px-4 py-2 rounded-full transition-colors
-      ${isSaving ? "bg-gray-500" : "bg-white"}
-      text-black`}
+            className={`px-6 py-2 rounded-full transition-all flex items-center gap-2
+              ${isSaving 
+                ? "bg-gray-500 cursor-not-allowed" 
+                : "bg-white hover:bg-gray-200"} text-black`}
           >
-            {isSaving ? "Saving..." : "Save Document"}
+            {isSaving ? (
+              <>
+                <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Saving...
+              </>
+            ) : (
+              <>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h-2v5.586l-1.293-1.293z" />
+                  <path d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm10 0H6v12h8V4z" />
+                </svg>
+                Save Document
+              </>
+            )}
           </button>
-        )}
+        ) : saveSuccess ? (
+          <div className="text-green-400 flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+            </svg>
+            Saved Successfully
+          </div>
+        ) : null}
       </div>
 
       <div className="prose prose-invert max-w-none">
@@ -162,14 +184,36 @@ export const ProcessedContent = ({ results, fileName }) => {
         )}
 
         {activeTab === "flashcards" && flashcards?.length > 0 && (
-          <div className="space-y-4">
+          <div className="space-y-6">
             {flashcards.map((card, idx) => (
               <div
                 key={idx}
-                className="border border-white/10 rounded-lg p-4 space-y-2"
+                onClick={() => toggleCard(idx)}
+                className={`bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 p-6 transition-all hover:bg-white/10 cursor-pointer relative min-h-[150px] ${
+                  flippedCards[idx] ? 'shadow-lg' : ''
+                }`}
               >
-                <p className="font-semibold text-white">Q: {card.question}</p>
-                <p className="text-white/70">A: {card.answer}</p>
+                <div className={`transition-all duration-300 ${
+                  flippedCards[idx] ? 'opacity-0' : 'opacity-100'
+                }`}>
+                  <h3 className="text-xl font-semibold mb-3">Question:</h3>
+                  <p className="text-white/90">{card.question}</p>
+                </div>
+                
+                <div className={`absolute inset-0 p-6 transition-all duration-300 rounded-xl ${
+                  flippedCards[idx] 
+                    ? 'opacity-100 transform translate-y-0 bg-white/5 backdrop-blur-sm border border-white/10' 
+                    : 'opacity-0 transform translate-y-4'
+                }`}>
+                  <h3 className="text-xl font-semibold mb-3 text-blue-400">Answer:</h3>
+                  <p className="text-white/90">{card.answer}</p>
+                </div>
+
+                <div className="absolute bottom-4 right-4">
+                  <span className="text-sm text-white/50">
+                    {flippedCards[idx] ? 'Click to hide answer' : 'Click to reveal answer'}
+                  </span>
+                </div>
               </div>
             ))}
           </div>
@@ -232,6 +276,18 @@ export const ProcessedContent = ({ results, fileName }) => {
             ))}
           </div>
         )}
+
+        {activeTab === "feynman" && (
+          <div>
+            <SpeechToTextEmbed 
+              summary={summary}
+              tldr={tldr}
+              title={results.title || "Document"}
+              flashcards={flashcards}
+            />
+          </div>
+        )}
+
       </div>
     </div>
   );

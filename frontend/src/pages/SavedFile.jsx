@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { marked } from 'marked';
+// Import the SpeechToText component to embed it
+import { SpeechToTextEmbed } from '../components/SpeechToTextEmbed';
 
 const File = () => {
   const location = useLocation();
@@ -47,20 +49,8 @@ const File = () => {
   };
 
   const handleTabClick = (tabId) => {
-    if (tabId === "tts") {
-      // Navigate to the speech-to-text page with the necessary data
-      navigate("/speech-to-text", { 
-        state: { 
-          summary: results.data.summary,
-          tldr: results.data.tldr,
-          title: results.title || "Document",
-          flashcards: results.data.flashcards,
-          quiz: results.data.quiz
-        } 
-      });
-    } else {
-      setActiveTab(tabId);
-    }
+    // Simply change the active tab instead of navigating
+    setActiveTab(tabId);
   };
 
   // Extract document data
@@ -102,18 +92,10 @@ const File = () => {
             </button>
             <div className="flex justify-between items-center">
               <h1 className="text-3xl font-bold">{document.name}</h1>
-              <div className="flex space-x-3">
-                <button className="px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors">
-                  Share
-                </button>
-                <button className="px-4 py-2 rounded-full bg-blue-600 hover:bg-blue-700 transition-colors">
-                  Download
-                </button>
-              </div>
+              <p className="text-gray-400 text-sm">
+                Uploaded on {new Date(document.uploadDate).toLocaleDateString()}
+              </p>
             </div>
-            <p className="text-gray-400 mt-1">
-              Uploaded on {new Date(document.uploadDate).toLocaleDateString()}
-            </p>
           </div>
           
           <div className="mt-8 bg-white/5 rounded-lg p-6">
@@ -231,6 +213,21 @@ const File = () => {
                         )}
                       </div>
                     ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Add Speech to Text (Feynman Technique) tab content */}
+              {activeTab === "tts" && (
+                <div>
+                  <h2>Practice Speaking</h2>
+                  <div className="mt-6">
+                    <SpeechToTextEmbed 
+                      summary={summary}
+                      tldr={tldr}
+                      title={document.name}
+                      flashcards={flashcards}
+                    />
                   </div>
                 </div>
               )}
