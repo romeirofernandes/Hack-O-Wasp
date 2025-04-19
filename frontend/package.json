@@ -16,6 +16,7 @@
     "axios": "^1.8.4",
     "firebase": "^11.6.0",
     "framer-motion": "^12.7.4",
+    "marked": "^15.0.8",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-dropzone": "^14.3.8",

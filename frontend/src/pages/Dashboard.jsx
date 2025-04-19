@@ -53,12 +53,23 @@ const Dashboard = () => {
         `${import.meta.env.VITE_API_URL}/api/users/${user.uid}/documents/${documentId}`
       );
       if (response.data.success) {
-        setSelectedDocument(response.data.document);
+        // Navigate to file page instead of opening modal
+        navigate("/file", { state: { document: response.data.document } });
       }
     } catch (error) {
       console.error("Error fetching document:", error);
     }
   };
+
+  // Fix the handleViewAllClick function to avoid passing non-serializable objects
+  const handleViewAllClick = () => {
+    // Instead of passing complex objects, just navigate to the page
+    // The AllSavedFiles component will fetch the documents itself
+    navigate("/all-files");
+  };
+
+  // Get only the most recent 3 documents for the dashboard
+  const recentDocuments = documents.slice(0, 3);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -165,28 +176,36 @@ const Dashboard = () => {
                 <h3 className="text-2xl font-semibold text-white">
                   📁 Recent uploads
                 </h3>
-                <button className="text-gray-400 hover:text-white text-sm">
+                <button 
+                  onClick={handleViewAllClick}
+                  className="text-gray-400 hover:text-white text-sm">
                   View all
                 </button>
               </div>
               <div className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 overflow-hidden">
-                {documents.map((doc) => (
-                  <div
-                    key={doc.id}
-                    onClick={() => handleDocumentClick(doc.id)}
-                    className="p-4 hover:bg-white/10 transition-colors cursor-pointer border-b border-white/10"
-                  >
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h4 className="text-white font-medium">{doc.name}</h4>
-                        <p className="text-gray-400 text-sm">
-                          {new Date(doc.uploadDate).toLocaleDateString()}
-                        </p>
+                {recentDocuments.length > 0 ? (
+                  recentDocuments.map((doc) => (
+                    <div
+                      key={doc.id}
+                      onClick={() => handleDocumentClick(doc.id)}
+                      className="p-4 hover:bg-white/10 transition-colors cursor-pointer border-b border-white/10"
+                    >
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h4 className="text-white font-medium">{doc.name}</h4>
+                          <p className="text-gray-400 text-sm">
+                            {new Date(doc.uploadDate).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <span className="text-sm text-gray-400">{doc.type || "PDF"}</span>
                       </div>
-                      <span className="text-sm text-gray-400">PDF</span>
                     </div>
+                  ))
+                ) : (
+                  <div className="p-6 text-center text-gray-400">
+                    No uploads yet. Add your first document!
                   </div>
-                ))}
+                )}
                 <div className="p-4 border-t border-white/10">
                   <button
                     onClick={() => navigate("/upload")}
