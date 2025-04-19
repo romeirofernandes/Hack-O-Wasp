@@ -6,6 +6,9 @@ require("dotenv").config();
 
 const app = express();
 
+// Import routes
+const userRoutes = require("./routes/userRoutes");
+
 connectDB();
 
 app.use(
@@ -16,6 +19,14 @@ app.use(
   })
 );
 app.use(express.json());
+
+// Use routes
+app.use("/api/users", userRoutes);
+
+// Basic route for testing
+app.get("/", (req, res) => {
+  res.send("API is running...");
+});
 
 const PORT = process.env.PORT || 8000;
 
