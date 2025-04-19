@@ -5,36 +5,36 @@ import { ContainerScroll } from "../components/ScrollContainer";
 import { TestimonialCard } from "../components/TestimonialCard";
 
 const Landing = () => {
-  const words = ["Career", "Intern", "Network"];
+  const words = ["Learning", "Teaching", "Growing"];
 
   const testimonials = [
     {
       author: {
         name: "Alex Chen",
-        role: "Software Engineering Intern, Google",
+        role: "Computer Science Student",
       },
-      text: "InternGuide helped me prepare and land my dream internship. The resources and community support were invaluable.",
+      text: "ClarityTrace helped me understand complex programming concepts that I struggled with for months. It's like having a personal tutor available 24/7.",
     },
     {
       author: {
         name: "Sarah Johnson",
-        role: "Data Science Intern, Microsoft",
+        role: "High School Teacher",
       },
-      text: "The interview prep resources were exactly what I needed. Went from rejection to multiple offers in just 2 months!",
+      text: "As an educator, ClarityTrace has transformed how I prepare my lessons. My students are more engaged and their test scores have improved significantly.",
     },
     {
       author: {
         name: "James Wilson",
-        role: "Product Management Intern, Amazon",
+        role: "Lifelong Learner",
       },
-      text: "The networking strategies I learned here opened doors I didn't even know existed. Truly game-changing platform.",
+      text: "I've tried many learning platforms, but ClarityTrace's personalized approach helped me retain information much longer. The difference is remarkable.",
     },
     {
       author: {
         name: "Maya Patel",
-        role: "UX Design Intern, Apple",
+        role: "Medical Student",
       },
-      text: "From resume building to interview prep, InternGuide provided everything I needed to succeed in my internship journey.",
+      text: "Studying for medical exams was overwhelming until I found ClarityTrace. It helped me organize complex information and improved my recall abilities.",
     },
   ];
 
@@ -57,7 +57,7 @@ const Landing = () => {
       <nav className="fixed top-3 left-0 right-0 z-50 bg-[#080808]/80 backdrop-blur-sm max-w-4xl mx-auto px-2 py-1 rounded-full border border-white/10">
         <div className="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
           <a href="/" className="text-white font-bold text-xl">
-            InternGuide
+            ClarityAI
           </a>
           <div className="flex items-center gap-8">
             <a
@@ -91,21 +91,21 @@ const Landing = () => {
       <section className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
-            Your Ultimate{" "}
+          Your AI-Powered{" "}
             <AnimatedTextCycle words={words} className="text-gray-300" /> Guide
           </h1>
           <p className="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto mb-8">
-            Expert guidance, curated resources, and a supportive community to
-            help you ace your internship journey.
+          ClarityAI isn't just an app. 
+          It's an AI-powered personal tutor that helps you learn smarter, retain longer, and teach like a pro.
           </p>
 
           {/* Hero Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-8">
             <button className="px-8 py-4 bg-white text-black hover:bg-gray-100 rounded-full font-semibold transition-all w-full sm:w-auto">
-              Get Started
+              Start Learning
             </button>
             <button className="px-8 py-4 bg-transparent text-white border border-white/20 hover:bg-white/5 rounded-full font-semibold transition-all w-full sm:w-auto">
-              Watch Demo
+              See How It Works
             </button>
           </div>
         </div>
@@ -115,7 +115,7 @@ const Landing = () => {
       <ContainerScroll
         titleComponent={
           <h2 className="text-3xl md:text-5xl font-bold text-white mb-8">
-            Everything You Need to Succeed
+            Transform Your Learning Experience
           </h2>
         }
       >
@@ -141,7 +141,7 @@ const Landing = () => {
               What Our Users Say
             </h2>
             <p className="text-gray-400 text-lg">
-              Join thousands of successful interns who transformed their careers
+            Join thousands of learners who have transformed their educational journey
             </p>
           </div>
 
@@ -176,11 +176,11 @@ const Landing = () => {
       <section className="relative z-10 py-20 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">
-            Ready to Start Your Journey?
+            Ready to Transform How You Learn?
           </h2>
           <p className="text-gray-400 text-lg mb-8">
-            Join thousands of students who have transformed their internship
-            experience with our platform.
+          Join thousands of students, teachers, and lifelong learners
+          who have revolutionized their educational experience with ClarityAI.
           </p>
           <button className="px-8 py-4 bg-white text-black hover:bg-gray-100 rounded-full font-semibold transition-all">
             Get Started Now
@@ -192,7 +192,7 @@ const Landing = () => {
       <footer className="relative z-10 border-t border-white/10 py-8 px-4">
         <div className="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center">
           <div className="text-gray-400 text-sm mb-4 md:mb-0">
-            © 2025 InternGuide. All rights reserved.
+            © 2025 ClarityAI. All rights reserved.
           </div>
           <div className="flex space-x-6">
             <a
@@ -223,24 +223,24 @@ const Landing = () => {
 // Features data
 const features = [
   {
-    title: "Resume Building",
+    title: "Learn Smarter",
     description:
-      "Learn how to craft a compelling resume that stands out to employers and highlights your unique skills.",
+      "Our AI adapts to your learning style, identifying knowledge gaps and providing personalized content that helps you understand complex concepts faster.",
   },
   {
-    title: "Interview Prep",
+    title: "Retain Longer",
     description:
-      "Access mock interviews, common questions, and expert tips to ace your internship interviews.",
+      "ClarityTrace uses proven spaced repetition techniques and cognitive science to ensure what you learn stays with you for the long term.",
   },
   {
-    title: "Industry Insights",
+    title: "Teach Like a Pro",
     description:
-      "Get valuable insights from industry professionals and learn about different career paths.",
+      "For educators, our platform offers lesson planning tools, engagement metrics, and AI-generated materials that transform your teaching approach.",
   },
   {
-    title: "Networking Guide",
+    title: "Personalized Feedback",
     description:
-      "Learn effective networking strategies and build meaningful professional relationships.",
+      "Receive immediate, constructive feedback on assignments, practice exercises, and projects to accelerate your growth.",
   },
 ];
 
