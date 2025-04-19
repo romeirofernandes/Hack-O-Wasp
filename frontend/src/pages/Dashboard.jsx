@@ -131,7 +131,8 @@ const Dashboard = () => {
             Quick Actions
           </h3>
           <div className="grid md:grid-cols-3 gap-4 mb-8">
-            <button className="group bg-white/5 hover:bg-white/10 p-6 rounded-xl border border-white/10 transition-all">
+          <button
+                    onClick={() => navigate("/upload")} className="group bg-white/5 hover:bg-white/10 p-6 rounded-xl border border-white/10 transition-all">
               <div className="text-white text-lg mb-2 font-medium">Upload</div>
               <p className="text-gray-400 text-sm">
                 Import notes, PDFs or videos
