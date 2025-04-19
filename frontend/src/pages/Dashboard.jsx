@@ -12,6 +12,11 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const modalRef = useRef(null); // ← Added ref for modal
+  const [stats, setStats] = useState({
+    totalDocuments: 0,
+    masteredCards: 0,
+    daysActive: 0
+  });
 
   // Add delete handler function
   const handleDeleteDocument = async (documentId, e) => {
@@ -103,6 +108,27 @@ const Dashboard = () => {
     return () => unsubscribe();
   }, [navigate]);
 
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        if (user) {
+          const response = await axios.get(
+            `${import.meta.env.VITE_API_URL}/api/users/${user.uid}/stats`
+          );
+          if (response.data.success) {
+            setStats(response.data.stats);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching stats:", error);
+      }
+    };
+
+    if (user) {
+      fetchStats();
+    }
+  }, [user]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#080808] flex items-center justify-center">
@@ -126,6 +152,7 @@ const Dashboard = () => {
                   className="w-16 h-16 rounded-full"
                 />
               ) : (
+                
                 <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center text-xl text-white">
                   {user?.displayName?.charAt(0) ||
                     user?.email?.charAt(0).toUpperCase()}
@@ -141,16 +168,16 @@ const Dashboard = () => {
 
             <div className="grid md:grid-cols-3 gap-4 text-center">
               <div className="bg-white/5 p-4 rounded-lg">
-                <p className="text-gray-400 text-sm">Uploads</p>
-                <p className="text-2xl font-bold text-white">12</p>
+                <p className="text-gray-400 text-sm">Total Documents</p>
+                <p className="text-2xl font-bold text-white">{stats.totalDocuments}</p>
               </div>
               <div className="bg-white/5 p-4 rounded-lg">
-                <p className="text-gray-400 text-sm">Current Streak</p>
-                <p className="text-2xl font-bold text-white">7 days</p>
+                <p className="text-gray-400 text-sm">Days Active</p>
+                <p className="text-2xl font-bold text-white">{stats.daysActive}</p>
               </div>
               <div className="bg-white/5 p-4 rounded-lg">
                 <p className="text-gray-400 text-sm">Mastered Cards</p>
-                <p className="text-2xl font-bold text-white">89</p>
+                <p className="text-2xl font-bold text-white">{stats.masteredCards}</p>
               </div>
             </div>
           </div>

@@ -187,3 +187,43 @@ exports.deleteDocument = async (req, res) => {
     });
   }
 };
+
+exports.getUserStats = async (req, res) => {
+  try {
+    const { firebaseUID } = req.params;
+    const user = await User.findOne({ firebaseUID });
+    
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    // Calculate total documents
+    const totalDocuments = user.documents.length;
+
+    // Calculate mastered cards (cards from flashcards that exist in documents)
+    const masteredCards = user.documents.reduce((total, doc) => {
+      return total + (doc.content?.flashcards?.length || 0);
+    }, 0);
+
+    // Calculate days since first upload
+    const firstUpload = user.documents.length > 0 
+      ? Math.floor((Date.now() - new Date(user.documents[0].uploadDate).getTime()) / (1000 * 60 * 60 * 24))
+      : 0;
+
+    res.status(200).json({
+      success: true,
+      stats: {
+        totalDocuments,
+        masteredCards,
+        daysActive: firstUpload
+      }
+    });
+  } catch (error) {
+    console.error("Error fetching user stats:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching user stats",
+      error: error.message
+    });
+  }
+};
