@@ -3,9 +3,11 @@ import { SplashCursor } from "../components/AnimatedBackground";
 import AnimatedTextCycle from "../components/AnimatedTextCycle";
 import { ContainerScroll } from "../components/ScrollContainer";
 import { TestimonialCard } from "../components/TestimonialCard";
+import { useNavigate } from "react-router-dom";
 
 const Landing = () => {
-  const words = ["Learning", "Teaching", "Growing"];
+  const navigate = useNavigate();
+  const words = ["Growing", "Study"];
 
   const testimonials = [
     {
@@ -69,7 +71,11 @@ const Landing = () => {
 
           {/* Hero Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-8">
-            <button className="px-8 py-4 bg-white text-black hover:bg-gray-100 rounded-full font-semibold transition-all w-full sm:w-auto">
+            <button className="px-8 py-4 bg-white text-black hover:bg-gray-100 rounded-full font-semibold transition-all w-full sm:w-auto" onClick={
+              () =>{
+                navigate("/upload");
+              }
+            }>
               Start Learning
             </button>
             <button className="px-8 py-4 bg-transparent text-white border border-white/20 hover:bg-white/5 rounded-full font-semibold transition-all w-full sm:w-auto">

@@ -10,7 +10,7 @@ import Navbar from "./components/Navbar";
 const App = () => {
   return (
     <BrowserRouter>
-      <Navbar/>
+      <Navbar />
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/upload" element={<Upload />} />
