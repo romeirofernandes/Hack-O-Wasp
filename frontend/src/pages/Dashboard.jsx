@@ -83,21 +83,7 @@ const Dashboard = () => {
 
   return (
     <div className="relative min-h-screen bg-[#080808] flex flex-col">
-      <SplashCursor
-        SIM_RESOLUTION={64}
-        DYE_RESOLUTION={512}
-        CAPTURE_RESOLUTION={256}
-        DENSITY_DISSIPATION={2.5}
-        VELOCITY_DISSIPATION={1.5}
-        PRESSURE_ITERATIONS={10}
-        CURL={2}
-        SPLAT_RADIUS={0.15}
-        SPLAT_FORCE={4000}
-        COLOR_UPDATE_SPEED={2}
-        BACK_COLOR={{ r: 0.05, g: 0.05, b: 0.05 }}
-      />
-      <Navbar />
-      
+  
       <div className="container relative z-10 mx-auto px-4 py-24 flex-grow">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-4xl font-bold mb-8 text-white">Your Dashboard</h2>
