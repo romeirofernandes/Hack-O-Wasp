@@ -41,7 +41,7 @@ export const FileUpload = ({ onUploadStart, onUploadComplete }) => {
   return (
     <div
       {...getRootProps()}
-      className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer
+      className={`border-2 h-60 border-dashed rounded-lg p-8 flex flex-col justify-center items-center text-center cursor-pointer
         transition-colors ${
           isDragActive
             ? "border-white/50 bg-white/5"
