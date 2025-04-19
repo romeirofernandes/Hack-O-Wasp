@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import ReactMarkdown from 'react-markdown';
+import OCRScanner from '../components/OCRScanner'; // Import the OCR component
 
 const SpeechToText = () => {
   const location = useLocation();
@@ -21,6 +22,10 @@ const SpeechToText = () => {
   const [showOnlySuggestions, setShowOnlySuggestions] = useState(false);
   const [isSuggestionsLoading, setIsSuggestionsLoading] = useState(false);
   const [showHints, setShowHints] = useState(false);
+  const [showOCRTool, setShowOCRTool] = useState(false); // State to toggle OCR tool visibility
+  const [selectedImage, setSelectedImage] = useState(null); // For OCR image selection
+  const [extractedText, setExtractedText] = useState(""); // For OCR extracted text
+  const [isOCRProcessing, setIsOCRProcessing] = useState(false); // For OCR processing state
   
   // Create topics array properly to ensure dropdown works
   const topics = [
@@ -337,6 +342,74 @@ const SpeechToText = () => {
     return "No specific suggestions were provided.";
   };
 
+  // OCR image selection handler
+  const handleImageSelect = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      setSelectedImage(e.target.files[0]);
+    }
+  };
+
+  // OCR processing handler
+  const handleOCR = async () => {
+    if (!selectedImage) {
+      setError("No image selected for OCR processing");
+      return;
+    }
+    
+    setIsOCRProcessing(true);
+    setError("");
+    
+    const formData = new FormData();
+    formData.append('image', selectedImage);
+    formData.append('language', 'eng'); // Optional, 'eng' by default
+    
+    try {
+      const res = await axios.post('http://localhost:8000/api/ocr', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      
+      console.log("Extracted Text:", res.data.text);
+      setExtractedText(res.data.text);
+      
+      // Append the extracted text to the transcript
+      if (res.data.text && res.data.text.trim()) {
+        setTranscript(prev => {
+          const newText = prev ? `${prev}\n\n${res.data.text}` : res.data.text;
+          return newText;
+        });
+        
+        // Hide OCR tool after successful scan
+        setShowOCRTool(false);
+      } else {
+        setError("No text was extracted from the image. Try a clearer image.");
+      }
+    } catch (error) {
+      console.error("OCR processing error:", error);
+      setError(`OCR processing failed: ${error.message || "Unknown error"}`);
+    } finally {
+      setIsOCRProcessing(false);
+      setSelectedImage(null); // Reset selected image
+    }
+  };
+
+  // Handle OCR complete from OCRScanner component
+  const handleOCRComplete = (extractedText) => {
+    if (extractedText && extractedText.trim()) {
+      setTranscript(prev => {
+        const newText = prev ? `${prev}\n\n${extractedText}` : extractedText;
+        return newText;
+      });
+    }
+    setShowOCRTool(false); // Hide OCR tool after successful scan
+  };
+  
+  // Toggle OCR tool visibility
+  const toggleOCRTool = () => {
+    setShowOCRTool(!showOCRTool);
+  };
+
   return (
     <div className="mt-16 relative min-h-screen bg-[#080808] flex flex-col">
       <div className="container relative z-10 mx-auto px-4 py-14 flex-grow">
@@ -392,7 +465,7 @@ const SpeechToText = () => {
                   <h4 className="text-lg font-medium text-white">Selected Topic:</h4>
                   <button 
                     onClick={toggleHints} 
-                    className="text-sm  px-3 py-1 rounded bg-white/10 hover:bg-white/20 text-white flex items-center"
+                    className="text-sm px-3 py-1 rounded bg-white/10 hover:bg-white/20 text-white flex items-center"
                     disabled={loadingTopicDetails}
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -402,7 +475,7 @@ const SpeechToText = () => {
                   </button>
                 </div>
                 
-                <div className=" text-white bg-white/10 p-4 rounded-lg">
+                <div className="text-white bg-white/10 p-4 rounded-lg">
                   <p>{getSelectedTopicText()}</p>
 
                   {/* Show topic details only when showHints is true */}
@@ -435,6 +508,63 @@ const SpeechToText = () => {
               </div>
             )}
           </div>
+
+          {/* OCR Tool (conditionally rendered) */}
+          {showOCRTool && (
+            <div className="bg-white/5 backdrop-blur-sm p-8 rounded-xl border border-white/10 mb-8">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-2xl font-semibold text-white">Text Scanner (OCR)</h3>
+                <button 
+                  onClick={toggleOCRTool}
+                  className="px-3 py-1 bg-white/10 hover:bg-white/20 rounded-lg text-white text-sm"
+                >
+                  Close Scanner
+                </button>
+              </div>
+              
+              <div className="space-y-6">
+                {/* Built-in OCR Scanner component */}
+                <OCRScanner onScanComplete={handleOCRComplete} />
+                
+                {/* Manual file upload for OCR */}
+                <div className="mt-6 border-t border-white/10 pt-6">
+                  <h4 className="text-lg font-medium text-white mb-3">Or upload an image file</h4>
+                  
+                  <div className="flex flex-col space-y-4">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageSelect}
+                      className="block w-full text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-white/10 file:text-white hover:file:bg-white/20"
+                    />
+                    
+                    <button
+                      onClick={handleOCR}
+                      disabled={!selectedImage || isOCRProcessing}
+                      className="w-full px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg font-medium text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isOCRProcessing ? (
+                        <div className="flex items-center justify-center">
+                          <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Processing Image...
+                        </div>
+                      ) : "Extract Text from Image"}
+                    </button>
+                  </div>
+                  
+                  {extractedText && (
+                    <div className="mt-4 p-4 bg-white/10 rounded-lg">
+                      <h5 className="font-medium text-blue-300 mb-2">Extracted Text:</h5>
+                      <p className="text-white whitespace-pre-wrap">{extractedText}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
           
           {/* Recording and Transcript Card */}
           <div className="bg-white/5 backdrop-blur-sm p-8 rounded-xl border border-white/10 mb-8">
@@ -449,32 +579,45 @@ const SpeechToText = () => {
                 )}
               </div>
               <div className="flex space-x-3">
+                {/* OCR Tool Toggle Button */}
+                <button
+                  onClick={toggleOCRTool} 
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all bg-white/10 hover:bg-white/20 text-white"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
+                  </svg>
+                  {showOCRTool ? "Hide Scanner" : "Scan Text"}
+                </button>
+                
+                {/* Recording Button */}
                 <button
                   onClick={toggleListening}
                   disabled={isProcessing || !selectedTopic}
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all
                     ${isListening ? 
-                      'bg-red-500 hover:bg-red-600' : 
+                      'bg-red-500 hover:bg-red-600 text-white' : 
                       'bg-white/10 hover:bg-white/20 text-white'
                     } ${(!selectedTopic) ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                   {isListening ? (
                     <>
-                      <span className="relative flex h-3 w-3">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-300 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-3 w-3 bg-red-400"></span>
-                      </span>
-                      Stop
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 001 1h4a1 1 0 001-1V8a1 1 0 00-1-1H8z" clipRule="evenodd" />
+                      </svg>
+                      Stop Recording
                     </>
                   ) : (
                     <>
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                         <path fillRule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clipRule="evenodd" />
                       </svg>
-                      Record
+                      Start Recording
                     </>
                   )}
                 </button>
+                
+                {/* Reset Button */}
                 <button
                   onClick={handleReset}
                   disabled={!transcript && !interimTranscript || isListening || isProcessing}
@@ -521,7 +664,7 @@ const SpeechToText = () => {
                 onChange={handleTranscriptChange}
                 disabled={isListening}
                 placeholder="Edit your explanation here..."
-                className={`w-full p-4 text-white border-t border-white/10 resize-y focus:ring-white/30 focus:border-white/30
+                className={`w-full p-4 text-white border-t border-white/10 resize-y focus:ring-white/30 focus:border-white/30 bg-transparent
                   ${isListening ? 'opacity-50 cursor-not-allowed' : ''}`}
                 rows={4}
               />
@@ -533,21 +676,36 @@ const SpeechToText = () => {
                   <span>{transcript.split(' ').length} words</span>
                 )}
               </div>
-              <button
-                onClick={() => handleSubmitExplanation(false)}
-                disabled={!transcript || isListening || isProcessing || isSuggestionsLoading}
-                className="px-6 py-2 bg-white hover:bg-gray-200 text-black rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-              >
-                {isProcessing ? (
-                  <>
-                    <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-black" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Analyzing...
-                  </>
-                ) : "Get Feedback"}
-              </button>
+              <div className="flex gap-4">
+                <button
+                  onClick={() => handleSubmitExplanation(true)}
+                  disabled={!transcript || isListening || isProcessing || isSuggestionsLoading}
+                  className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"> {isSuggestionsLoading ? (
+                    <>
+                      <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Loading...
+                    </>
+                  ) : "Get Quick Suggestions"}
+                </button>
+                <button
+                  onClick={() => handleSubmitExplanation(false)}
+                  disabled={!transcript || isListening || isProcessing || isSuggestionsLoading}
+                  className="px-6 py-2 bg-white hover:bg-gray-200 text-black rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                >
+                  {isProcessing ? (
+                    <>
+                      <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-black" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Analyzing...
+                    </>
+                  ) : "Get Complete Feedback"}
+                </button>
+              </div>
             </div>
           </div>
           
@@ -557,7 +715,7 @@ const SpeechToText = () => {
               <h3 className="text-2xl font-semibold mb-6 text-white">{showOnlySuggestions ? "Suggestions" : "Feedback"}</h3>
               
               {scores && !showOnlySuggestions && (
-                <div className="grid grid-cols-3 gap-4 mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                   {Object.entries(scores).map(([dimension, score]) => (
                     <div key={dimension} className="bg-white/10 p-4 rounded-lg">
                       <div className="text-sm text-gray-400 capitalize mb-1">{dimension}</div>

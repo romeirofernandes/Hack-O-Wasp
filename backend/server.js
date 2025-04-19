@@ -3,6 +3,8 @@ const cors = require("cors");
 const connectDB = require("./config/db");
 const uploadRoutes = require("./routes/upload");
 const transcribeRoutes = require("./routes/transcribe");
+const ocrRoutes = require("./routes/ocrRoutes"); // ⬅️ New line
+
 require("dotenv").config();
 
 const app = express();
@@ -25,6 +27,8 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 app.use("/api/upload", uploadRoutes);
 app.use("/api/transcribe", transcribeRoutes);
+app.use("/api", ocrRoutes);
+
 
 // Use routes
 app.use("/api/users", userRoutes);

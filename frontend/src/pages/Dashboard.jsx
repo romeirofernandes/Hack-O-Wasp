@@ -86,7 +86,8 @@ const Dashboard = () => {
     // Instead of passing complex objects, just navigate to the page
     // The AllSavedFiles component will fetch the documents itself
     navigate("/all-files");
-  };
+  };  
+  
 
   // Get only the most recent 3 documents for the dashboard
   const recentDocuments = documents.slice(0, 3);
