@@ -29,7 +29,7 @@ export default function Decks() {
       deck.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       deck.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
+  console.log(decks)
   return (
     <div className="min-h-screen bg-[#080808] text-white pt-24">
       <div className="container mx-auto px-4 py-8">
@@ -97,6 +97,7 @@ export default function Decks() {
           ) : filteredDecks.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredDecks.map((deck) => (
+                  
                 <DeckCard key={deck._id} deck={deck} />
               ))}
             </div>

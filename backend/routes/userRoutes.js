@@ -6,7 +6,8 @@ const {
   getUserDocuments,
   getDocumentById,
   deleteDocument,
-  getUserStats
+  getUserStats,
+  getUserName // Add this line
 } = require("../controllers/userController");
 
 router.post("/auth", registerOrLogin);
@@ -15,5 +16,6 @@ router.get("/:firebaseUID/documents", getUserDocuments);
 router.get("/:firebaseUID/documents/:documentId", getDocumentById);
 router.delete('/:firebaseUID/documents/:documentId', deleteDocument);
 router.get("/:firebaseUID/stats", getUserStats);
+router.get("/:firebaseUID/name", getUserName); // Add this line
 
 module.exports = router;
