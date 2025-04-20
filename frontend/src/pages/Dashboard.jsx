@@ -204,9 +204,14 @@ const Dashboard = () => {
                 →
               </div>
             </button>
-            <button className="group bg-white/5 hover:bg-white/10 p-6 rounded-xl border border-white/10 transition-all">
-              <div className="text-white text-lg mb-2 font-medium">Quiz</div>
-              <p className="text-gray-400 text-sm">Test your knowledge</p>
+            <button
+              onClick={() => navigate("/decks")}
+              className="group bg-white/5 hover:bg-white/10 p-6 rounded-xl border border-white/10 transition-all"
+            >
+              <div className="text-white text-lg mb-2 font-medium">Decks</div>
+              <p className="text-gray-400 text-sm">
+                Create and explore study decks
+              </p>
               <div className="mt-4 text-white/50 group-hover:text-white transition-colors">
                 →
               </div>

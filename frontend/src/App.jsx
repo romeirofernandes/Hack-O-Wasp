@@ -1,14 +1,17 @@
 import React from "react";
-import { BrowserRouter , Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Upload from "./pages/Upload";
-// import SpeechToText from "./pages/SpeechToText";
 import Navbar from "./components/Navbar";
 import File from "./pages/SavedFile";
 import AllSavedFiles from "./pages/AllSavedFiles";
 import Revision from "./pages/Revision";
+// Add new imports
+import Decks from "./pages/Decks";
+import CreateDeck from "./pages/CreateDeck";
+import ViewDeck from "./pages/ViewDeck";
 
 const App = () => {
   return (
@@ -22,7 +25,10 @@ const App = () => {
         <Route path="/file" element={<File />} />
         <Route path="/all-files" element={<AllSavedFiles />} />
         <Route path="/revision" element={<Revision />} />
-        {/* <Route path="/speech-to-text" element={<SpeechToText />} /> */}
+        {/* Add new deck routes */}
+        <Route path="/decks" element={<Decks />} />
+        <Route path="/create-deck" element={<CreateDeck />} />
+        <Route path="/deck/:id" element={<ViewDeck />} />
       </Routes>
     </BrowserRouter>
   );
