@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { auth } from "../firebase.config"; // Add this import
+import { auth } from "../firebase.config";
 import api from "../utils/axios";
 import MermaidEditor from "../components/MermaidEditor";
 
 export default function CreateDeck() {
   const navigate = useNavigate();
+  const [user, setUser] = useState(null);
   const [deck, setDeck] = useState({
     title: "",
     description: "",
@@ -23,10 +24,13 @@ export default function CreateDeck() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
-      if (!user) {
+    const unsubscribe = auth.onAuthStateChanged((currentUser) => {
+      if (!currentUser) {
         navigate("/login");
+        return;
       }
+      setUser(currentUser);
+      console.log("Current user UID:", currentUser.uid); // Debug log
     });
 
     return () => unsubscribe();
@@ -36,11 +40,17 @@ export default function CreateDeck() {
     e.preventDefault();
     setError("");
 
+    if (!user) {
+      setError("Please login first");
+      return;
+    }
+
     try {
-      const idToken = await auth.currentUser.getIdToken();
-
-      const response = await api.post("/api/decks", deck);
-
+      console.log("Sending request with UID:", user.uid); // Debug log
+      const response = await api.post("/api/decks", {
+        ...deck,
+        authorId: user.uid // This will now be properly set
+      });
       if (response.data) {
         navigate(`/deck/${response.data._id}`);
       }
