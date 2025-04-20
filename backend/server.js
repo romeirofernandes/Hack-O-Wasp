@@ -3,22 +3,19 @@ const cors = require("cors");
 const connectDB = require("./config/db");
 const uploadRoutes = require("./routes/upload");
 const transcribeRoutes = require("./routes/transcribe");
-const streakRoutes = require("./routes/streakRoutes");const deckRoutes = require("./routes/deckRoutes");
-
+const streakRoutes = require("./routes/streakRoutes");
+const deckRoutes = require("./routes/deckRoutes");
+const userRoutes = require("./routes/userRoutes");
 const revisionRoutes = require("./routes/revision");
 require("dotenv").config();
 
 const app = express();
 
-// Import routes
-const userRoutes = require("./routes/userRoutes");
-const streak = require("./models/streak");
-
 connectDB();
 
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    origin: "https://clarity-ai-virid.vercel.app",
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     credentials: true,
   })
