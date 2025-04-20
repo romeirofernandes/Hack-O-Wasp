@@ -76,7 +76,7 @@ export const ProcessedContent = ({ results, fileName }) => {
     { id: "tldr", label: "⚡ TLDR" },
     { id: "flashcards", label: "🔄 Flashcards" },
     { id: "quiz", label: "❓ Quiz" },
-    { id: "feynman", label: "🎤 Practice Speaking" }  // Changed from "tts"
+    { id: "feynman", label: "🎤 Active Recall" }, // Changed from "tts"
   ];
 
   if (!results?.data) {
@@ -110,9 +110,9 @@ export const ProcessedContent = ({ results, fileName }) => {
   };
 
   const toggleCard = (idx) => {
-    setFlippedCards(prev => ({
+    setFlippedCards((prev) => ({
       ...prev,
-      [idx]: !prev[idx]
+      [idx]: !prev[idx],
     }));
   };
 
@@ -144,13 +144,31 @@ export const ProcessedContent = ({ results, fileName }) => {
             >
               {isSaving ? (
                 <>
-                  <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  <svg
+                    className="animate-spin h-4 w-4"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
                   </svg>
                   Saving...
                 </>
-              ) : "Save"}
+              ) : (
+                "Save"
+              )}
             </button>
           </div>
         </div>
@@ -167,9 +185,10 @@ export const ProcessedContent = ({ results, fileName }) => {
               key={tab.id}
               onClick={() => handleTabClick(tab.id)}
               className={`px-4 py-2 rounded-full transition-colors whitespace-nowrap
-                ${activeTab === tab.id
-                  ? "bg-white text-black"
-                  : "text-white/70 hover:text-white hover:bg-white/10"
+                ${
+                  activeTab === tab.id
+                    ? "bg-white text-black"
+                    : "text-white/70 hover:text-white hover:bg-white/10"
                 }`}
             >
               {tab.label}
@@ -181,16 +200,21 @@ export const ProcessedContent = ({ results, fileName }) => {
             onClick={openSaveModal}
             className="px-6 py-2 rounded-full transition-all flex items-center gap-2 bg-white hover:bg-gray-200 text-black"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h-2v5.586l-1.293-1.293z" />
-              <path d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm10 0H6v12h8V4z" />
-            </svg>
             Save Document
           </button>
         ) : saveSuccess ? (
           <div className="text-green-400 flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                clipRule="evenodd"
+              />
             </svg>
             Saved Successfully
           </div>
@@ -219,28 +243,36 @@ export const ProcessedContent = ({ results, fileName }) => {
                 key={idx}
                 onClick={() => toggleCard(idx)}
                 className={`bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 p-6 transition-all hover:bg-white/10 cursor-pointer relative min-h-[150px] ${
-                  flippedCards[idx] ? 'shadow-lg' : ''
+                  flippedCards[idx] ? "shadow-lg" : ""
                 }`}
               >
-                <div className={`transition-all duration-300 ${
-                  flippedCards[idx] ? 'opacity-0' : 'opacity-100'
-                }`}>
+                <div
+                  className={`transition-all duration-300 ${
+                    flippedCards[idx] ? "opacity-0" : "opacity-100"
+                  }`}
+                >
                   <h3 className="text-xl font-semibold mb-3">Question:</h3>
                   <p className="text-white/90">{card.question}</p>
                 </div>
-                
-                <div className={`absolute inset-0 p-6 transition-all duration-300 rounded-xl ${
-                  flippedCards[idx] 
-                    ? 'opacity-100 transform translate-y-0 bg-white/5 backdrop-blur-sm border border-white/10' 
-                    : 'opacity-0 transform translate-y-4'
-                }`}>
-                  <h3 className="text-xl font-semibold mb-3 text-blue-400">Answer:</h3>
+
+                <div
+                  className={`absolute inset-0 p-6 transition-all duration-300 rounded-xl ${
+                    flippedCards[idx]
+                      ? "opacity-100 transform translate-y-0 bg-white/5 backdrop-blur-sm border border-white/10"
+                      : "opacity-0 transform translate-y-4"
+                  }`}
+                >
+                  <h3 className="text-xl font-semibold mb-3 text-blue-400">
+                    Answer:
+                  </h3>
                   <p className="text-white/90">{card.answer}</p>
                 </div>
 
                 <div className="absolute bottom-4 right-4">
                   <span className="text-sm text-white/50">
-                    {flippedCards[idx] ? 'Click to hide answer' : 'Click to reveal answer'}
+                    {flippedCards[idx]
+                      ? "Click to hide answer"
+                      : "Click to reveal answer"}
                   </span>
                 </div>
               </div>
@@ -308,7 +340,7 @@ export const ProcessedContent = ({ results, fileName }) => {
 
         {activeTab === "feynman" && (
           <div>
-            <SpeechToTextEmbed 
+            <SpeechToTextEmbed
               summary={summary}
               tldr={tldr}
               title={results.title || "Document"}
@@ -316,7 +348,6 @@ export const ProcessedContent = ({ results, fileName }) => {
             />
           </div>
         )}
-
       </div>
       {renderSaveModal()}
     </div>

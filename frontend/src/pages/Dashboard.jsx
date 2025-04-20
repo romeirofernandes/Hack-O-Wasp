@@ -247,7 +247,6 @@ const Dashboard = () => {
                   className="w-16 h-16 rounded-full"
                 />
               ) : (
-                
                 <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center text-xl text-white">
                   {user?.displayName?.charAt(0) ||
                     user?.email?.charAt(0).toUpperCase()}
@@ -264,12 +263,16 @@ const Dashboard = () => {
             <div className="grid md:grid-cols-3 gap-4 text-center">
               <div className="bg-white/5 p-4 rounded-lg">
                 <p className="text-gray-400 text-sm">Total Documents</p>
-                <p className="text-2xl font-bold text-white">{stats.totalDocuments}</p>
+                <p className="text-2xl font-bold text-white">
+                  {stats.totalDocuments}
+                </p>
               </div>
               <StreakDisplay />
               <div className="bg-white/5 p-4 rounded-lg">
                 <p className="text-gray-400 text-sm">Mastered Cards</p>
-                <p className="text-2xl font-bold text-white">{stats.masteredCards}</p>
+                <p className="text-2xl font-bold text-white">
+                  {stats.masteredCards}
+                </p>
               </div>
             </div>
           </div>
@@ -305,7 +308,9 @@ const Dashboard = () => {
               className="group bg-white/5 hover:bg-white/10 p-6 rounded-xl border border-white/10 transition-all"
             >
               <div className="text-white text-lg mb-2 font-medium">Revise</div>
-              <p className="text-gray-400 text-sm">Practice previous concepts</p>
+              <p className="text-gray-400 text-sm">
+                Practice previous concepts
+              </p>
               <div className="mt-4 text-white/50 group-hover:text-white transition-colors">
                 →
               </div>
@@ -319,9 +324,10 @@ const Dashboard = () => {
                 <h3 className="text-2xl font-semibold text-white">
                   📁 Recent uploads
                 </h3>
-                <button 
+                <button
                   onClick={handleViewAllClick}
-                  className="text-gray-400 hover:text-white text-sm">
+                  className="text-gray-400 hover:text-white text-sm"
+                >
                   View all
                 </button>
               </div>
@@ -340,7 +346,9 @@ const Dashboard = () => {
                             {new Date(doc.uploadDate).toLocaleDateString()}
                           </p>
                         </div>
-                        <span className="text-sm text-gray-400">{doc.type || "PDF"}</span>
+                        <span className="text-sm text-gray-400">
+                          {doc.type || "PDF"}
+                        </span>
                       </div>
                     </div>
                   ))
@@ -404,6 +412,7 @@ const Dashboard = () => {
           <div className="text-gray-400 text-sm mb-4 md:mb-0">
             © {new Date().getFullYear()} ClarityAI. All rights reserved.
           </div>
+          <div className="text-gray-400 text-sm">Crafted by Team Mbappe</div>
         </div>
       </footer>
     </div>
