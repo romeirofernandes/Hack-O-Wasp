@@ -15,7 +15,8 @@ const Dashboard = () => {
   const [stats, setStats] = useState({
     totalDocuments: 0,
     masteredCards: 0,
-    daysActive: 0,
+    currentStreak: 0,
+    longestStreak: 0
   });
 
   // Add delete handler function
@@ -32,6 +33,66 @@ const Dashboard = () => {
       }
     } catch (error) {
       console.error("Error deleting document:", error);
+    }
+  };
+
+  const updateStreak = async () => {
+    try {
+      if (user) {
+        const response = await axios.post(
+          `${import.meta.env.VITE_API_URL}/api/streak/updateStreak`,
+          { userId: user.uid }
+        );
+        if (response.data.success) {
+          const oldStreak = stats.currentStreak;
+          const newStreak = response.data.streak.currentStreak;
+          
+          if (newStreak > oldStreak) {
+            console.log(`[Streak Frontend] 🔥 Streak increased from ${oldStreak} to ${newStreak} days!`);
+          }
+          
+          setStats(prev => ({
+            ...prev,
+            currentStreak: newStreak,
+            longestStreak: response.data.streak.longestStreak
+          }));
+        }
+      }
+    } catch (error) {
+      console.error("Error updating streak:", error);
+    }
+  };
+
+  // Add an object to track key activities
+  const KEY_ACTIVITIES = {
+    UPLOAD: 'upload',
+    QUIZ: 'quiz',
+    REVISION: 'revision',
+    VIEW_DOCUMENT: 'view_document',
+    COMPLETE_QUIZ: 'complete_quiz',
+    PRACTICE_CARDS: 'practice_cards'
+  };
+
+  // Modify the handleQuickActionClick function
+  const handleQuickActionClick = async (action) => {
+    try {
+      await updateStreak();
+      switch (action) {
+        case KEY_ACTIVITIES.UPLOAD:
+          navigate('/upload');
+          break;
+        case KEY_ACTIVITIES.QUIZ:
+          navigate('/quiz');
+          break;
+        case KEY_ACTIVITIES.REVISION:
+          navigate('/revision');
+          break;
+        case KEY_ACTIVITIES.PRACTICE_CARDS:
+          navigate('/flashcards');
+          break;
+      }
+    } catch (error) {
+      console.error("Error handling quick action:", error);
     }
   };
 
@@ -69,8 +130,10 @@ const Dashboard = () => {
     }
   }, [user]);
 
+  // Add handler for document viewing
   const handleDocumentClick = async (documentId) => {
     try {
+      await updateStreak(); // Count document viewing as a key activity
       const response = await axios.get(
         `${import.meta.env.VITE_API_URL}/api/users/${
           user.uid
@@ -112,12 +175,18 @@ const Dashboard = () => {
     const fetchStats = async () => {
       try {
         if (user) {
-          const response = await axios.get(
-            `${import.meta.env.VITE_API_URL}/api/users/${user.uid}/stats`
-          );
-          if (response.data.success) {
-            setStats(response.data.stats);
-          }
+          // Fetch both general stats and streak stats
+          const [statsResponse, streakResponse] = await Promise.all([
+            axios.get(`${import.meta.env.VITE_API_URL}/api/users/${user.uid}/stats`),
+            axios.get(`${import.meta.env.VITE_API_URL}/api/streak/${user.uid}`)
+          ]);
+
+          setStats(prev => ({
+            ...prev,
+            ...statsResponse.data.stats,
+            currentStreak: streakResponse.data.streak.currentStreak || 0,
+            longestStreak: streakResponse.data.streak.longestStreak || 0
+          }));
         }
       } catch (error) {
         console.error("Error fetching stats:", error);
@@ -128,6 +197,32 @@ const Dashboard = () => {
       fetchStats();
     }
   }, [user]);
+
+  // Add tooltip to show streak info
+  const getStreakTooltip = () => {
+    return `Complete any of these activities daily to maintain your streak:
+    • Upload new study material
+    • Take a quiz
+    • Review flashcards
+    • Study saved documents
+    • Practice revision`;
+  };
+
+  // Update the streak display
+  const StreakDisplay = () => (
+    <div className="bg-white/5 p-4 rounded-lg">
+      <p className="text-gray-400 text-sm">Current Streak</p>
+      <p className="text-2xl font-bold text-white group relative">
+        <span>{stats.currentStreak || 0}</span> days 
+        <span className="opacity-0 group-hover:opacity-100 transition-opacity absolute bottom-full left-1/2 transform -translate-x-1/2 bg-black/90 text-white text-xs p-2 rounded whitespace-pre-line w-48">
+          {getStreakTooltip()}
+        </span>
+      </p>
+      <p className="text-xs text-gray-400">
+        Best: {stats.longestStreak || 0} days
+      </p>
+    </div>
+  );
 
   if (loading) {
     return (
@@ -172,12 +267,7 @@ const Dashboard = () => {
                   {stats.totalDocuments}
                 </p>
               </div>
-              <div className="bg-white/5 p-4 rounded-lg">
-                <p className="text-gray-400 text-sm">Days Active</p>
-                <p className="text-2xl font-bold text-white">
-                  {stats.daysActive}
-                </p>
-              </div>
+              <StreakDisplay />
               <div className="bg-white/5 p-4 rounded-lg">
                 <p className="text-gray-400 text-sm">Mastered Cards</p>
                 <p className="text-2xl font-bold text-white">
@@ -193,7 +283,7 @@ const Dashboard = () => {
           </h3>
           <div className="grid md:grid-cols-3 gap-4 mb-8">
             <button
-              onClick={() => navigate("/upload")}
+              onClick={() => handleQuickActionClick('upload')}
               className="group bg-white/5 hover:bg-white/10 p-6 rounded-xl border border-white/10 transition-all"
             >
               <div className="text-white text-lg mb-2 font-medium">Upload</div>
@@ -204,20 +294,17 @@ const Dashboard = () => {
                 →
               </div>
             </button>
-            <button
-              onClick={() => navigate("/decks")}
-              className="group bg-white/5 hover:bg-white/10 p-6 rounded-xl border border-white/10 transition-all"
-            >
-              <div className="text-white text-lg mb-2 font-medium">Decks</div>
-              <p className="text-gray-400 text-sm">
-                Create and explore study decks
-              </p>
+            <button 
+              onClick={() => handleQuickActionClick('quiz')}
+              className="group bg-white/5 hover:bg-white/10 p-6 rounded-xl border border-white/10 transition-all">
+              <div className="text-white text-lg mb-2 font-medium">Quiz</div>
+              <p className="text-gray-400 text-sm">Test your knowledge</p>
               <div className="mt-4 text-white/50 group-hover:text-white transition-colors">
                 →
               </div>
             </button>
-            <button
-              onClick={() => navigate("/revision")}
+            <button 
+              onClick={() => handleQuickActionClick('revision')}
               className="group bg-white/5 hover:bg-white/10 p-6 rounded-xl border border-white/10 transition-all"
             >
               <div className="text-white text-lg mb-2 font-medium">Revise</div>
