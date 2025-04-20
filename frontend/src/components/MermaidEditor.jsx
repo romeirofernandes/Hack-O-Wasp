@@ -14,14 +14,9 @@ export default function MermaidEditor({ onDiagramGenerated }) {
       const response = await api.post("/api/decks/generate-mermaid", {
         description,
       });
-
-      // Extract the mermaid code from the response
-      // The response will be in ```mermaid ... ``` format
       const mermaidCode = response.data.code;
-
-      // Pass both description and code to parent
       onDiagramGenerated(description, mermaidCode);
-      setDescription(""); // Clear input after successful generation
+      setDescription("");
     } catch (error) {
       setError("Failed to generate diagram. Please try again.");
       console.error("API error:", error);

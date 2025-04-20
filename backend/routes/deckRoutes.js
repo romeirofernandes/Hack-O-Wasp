@@ -8,13 +8,21 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 // Create a new deck
 router.post('/', async (req, res) => {
   try {
+    const { authorId, ...deckData } = req.body;
+    
+    if (!authorId) {
+      return res.status(400).json({ error: 'Author ID is required' });
+    }
+
     const deck = new Deck({
-      ...req.body,
-      author: req.user.id
+      ...deckData,
+      author: authorId
     });
-    await deck.store();
+    
+    await deck.save();
     res.status(201).json(deck);
   } catch (error) {
+    console.error('Error creating deck:', error);
     res.status(400).json({ error: error.message });
   }
 });
@@ -39,7 +47,6 @@ router.post('/generate-mermaid', async (req, res) => {
 router.get('/public', async (req, res) => {
   try {
     const decks = await Deck.find({ isPublic: true })
-      .populate('author', 'name')
       .sort({ createdAt: -1 });
     res.json(decks);
   } catch (error) {
@@ -50,7 +57,7 @@ router.get('/public', async (req, res) => {
 // Get user's decks
 router.get('/my-decks', async (req, res) => {
   try {
-    const decks = await Deck.find({ author: req.user.id })
+    const decks = await Deck.find()
       .sort({ createdAt: -1 });
     res.json(decks);
   } catch (error) {
@@ -61,8 +68,7 @@ router.get('/my-decks', async (req, res) => {
 // Get single deck
 router.get('/:id', async (req, res) => {
   try {
-    const deck = await Deck.findById(req.params.id)
-      .populate('author', 'name');
+    const deck = await Deck.findById(req.params.id);
     if (!deck) {
       return res.status(404).json({ error: 'Deck not found' });
     }
