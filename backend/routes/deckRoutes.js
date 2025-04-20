@@ -65,6 +65,25 @@ router.get('/my-decks', async (req, res) => {
   }
 });
 
+// Update the my-decks/:userId route
+router.get('/my-decks/:userId', async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    if (!userId) {
+      return res.status(400).json({ error: 'User ID is required' });
+    }
+    
+    const decks = await Deck.find({ author: userId })
+      .select('title description isPublic createdAt updatedAt')
+      .sort({ createdAt: -1 });
+      
+    res.json(decks);
+  } catch (error) {
+    console.error('Error fetching user decks:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Get single deck
 router.get('/:id', async (req, res) => {
   try {
@@ -73,6 +92,37 @@ router.get('/:id', async (req, res) => {
       return res.status(404).json({ error: 'Deck not found' });
     }
     res.json(deck);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update deck
+router.put('/:id', async (req, res) => {
+  try {
+    const { authorId, ...updateData } = req.body;
+    const deck = await Deck.findOneAndUpdate(
+      { _id: req.params.id, author: authorId },
+      { ...updateData, updatedAt: Date.now() },
+      { new: true }
+    );
+    if (!deck) {
+      return res.status(404).json({ error: 'Deck not found or unauthorized' });
+    }
+    res.json(deck);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Delete deck
+router.delete('/:id', async (req, res) => {
+  try {
+    const deck = await Deck.findByIdAndDelete(req.params.id);
+    if (!deck) {
+      return res.status(404).json({ error: 'Deck not found' });
+    }
+    res.json({ message: 'Deck deleted successfully' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

@@ -12,6 +12,7 @@ import Revision from "./pages/Revision";
 import Decks from "./pages/Decks";
 import CreateDeck from "./pages/CreateDeck";
 import ViewDeck from "./pages/ViewDeck";
+import ManageDecks from "./pages/ManageDecks";
 
 const App = () => {
   return (
@@ -29,6 +30,9 @@ const App = () => {
         <Route path="/decks" element={<Decks />} />
         <Route path="/create-deck" element={<CreateDeck />} />
         <Route path="/deck/:id" element={<ViewDeck />} />
+      <Route path="/manage-decks" element={<ManageDecks/>}/>
+
+      
       </Routes>
     </BrowserRouter>
   );

@@ -4,6 +4,8 @@ import { auth } from "../firebase.config";
 import { onAuthStateChanged } from "firebase/auth";
 import { ProcessedContent } from "../components/ProcessedContent";
 import axios from "axios";
+import ViewDeckDashboard from '../components/ViewDeckDashboard';
+import ManageDecks from './ManageDecks';
 
 const Dashboard = () => {
   const [documents, setDocuments] = useState([]);
@@ -409,6 +411,23 @@ const Dashboard = () => {
                   </div>
                 </div>
               )}
+            </div>
+            
+            {/* Second column with recent decks */}
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-2xl font-semibold text-white">
+                  📚 Recent Decks
+                </h3>
+                <button
+                  onClick={() => navigate("/manage-decks")}
+                  className="text-gray-400 hover:text-white text-sm flex items-center gap-1"
+                >
+                  Manage Decks
+                  <span className="text-lg">→</span>
+                </button>
+              </div>
+              <ViewDeckDashboard userId={user?.uid} />
             </div>
           </div>
         </div>
