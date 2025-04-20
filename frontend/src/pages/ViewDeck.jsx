@@ -10,6 +10,12 @@ export default function ViewDeck() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('notes');
 
+  // Add new state variables
+  const [flippedCards, setFlippedCards] = useState({});
+  const [selectedAnswers, setSelectedAnswers] = useState({});
+  const [showExplanations, setShowExplanations] = useState({});
+  const [score, setScore] = useState(null);
+
   useEffect(() => {
     fetchDeck();
   }, [id]);
@@ -23,6 +29,34 @@ export default function ViewDeck() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Add new handlers
+  const toggleCard = (index) => {
+    setFlippedCards(prev => ({
+      ...prev,
+      [index]: !prev[index]
+    }));
+  };
+
+  const handleAnswerSelect = (questionIndex, optionIndex) => {
+    setSelectedAnswers(prev => ({
+      ...prev,
+      [questionIndex]: optionIndex
+    }));
+    setShowExplanations(prev => ({
+      ...prev,
+      [questionIndex]: true
+    }));
+  };
+
+  // Calculate score
+  const calculateScore = () => {
+    if (!deck?.content?.quiz?.length) return 0;
+    const correct = deck.content.quiz.reduce((acc, question, index) => {
+      return acc + (selectedAnswers[index] === question.correctAnswer ? 1 : 0);
+    }, 0);
+    return Math.round((correct / deck.content.quiz.length) * 100);
   };
 
   if (loading) {
@@ -130,35 +164,109 @@ export default function ViewDeck() {
             )}
 
             {activeTab === 'flashcards' && (
-              <div className="grid gap-4">
+              <div className="grid gap-6">
                 {deck.content.flashcards.map((card, index) => (
-                  <div key={index} className="bg-white/5 p-4 rounded-lg border border-white/10">
-                    <h3 className="font-bold mb-2 text-white">Q: {card.question}</h3>
-                    <p className="text-gray-300">A: {card.answer}</p>
+                  <div
+                    key={index}
+                    onClick={() => toggleCard(index)}
+                    className={`bg-white/5 p-6 rounded-lg border border-white/10 cursor-pointer transition-all duration-300 
+                      ${flippedCards[index] ? 'shadow-lg' : ''}`}
+                    style={{ perspective: '1000px', minHeight: '200px' }}
+                  >
+                    <div
+                      className={`relative w-full h-full transition-transform duration-300 transform-gpu 
+                        ${flippedCards[index] ? 'rotate-y-180' : ''}`}
+                      style={{ transformStyle: 'preserve-3d' }}
+                    >
+                      {/* Front of card */}
+                      <div
+                        className={`absolute w-full h-full backface-hidden 
+                          ${flippedCards[index] ? 'opacity-0' : 'opacity-100'}`}
+                      >
+                        <h3 className="text-xl font-semibold mb-3 text-white">Question:</h3>
+                        <p className="text-gray-300">{card.question}</p>
+                      </div>
+                      
+                      {/* Back of card */}
+                      <div
+                        className={`absolute w-full h-full backface-hidden rotate-y-180 
+                          ${flippedCards[index] ? 'opacity-100' : 'opacity-0'}`}
+                      >
+                        <h3 className="text-xl font-semibold mb-3 text-white">Answer:</h3>
+                        <p className="text-gray-300">{card.answer}</p>
+                      </div>
+                    </div>
+                    <div className="absolute bottom-4 right-4">
+                      <span className="text-sm text-white/50">
+                        {flippedCards[index] ? "Click to hide answer" : "Click to show answer"}
+                      </span>
+                    </div>
                   </div>
                 ))}
               </div>
             )}
 
             {activeTab === 'quiz' && (
-              <div className="space-y-6">
+              <div className="space-y-8">
+                <div className="mb-6">
+                  {score !== null && (
+                    <div className="bg-white/5 p-4 rounded-lg border border-white/10 mb-6">
+                      <h3 className="text-xl font-semibold text-white">
+                        Your Score: {score}%
+                      </h3>
+                    </div>
+                  )}
+                </div>
+                
                 {deck.content.quiz.map((question, index) => (
-                  <div key={index} className="bg-white/5 p-4 rounded-lg border border-white/10">
-                    <h3 className="font-bold mb-2 text-white">{question.question}</h3>
-                    <div className="space-y-2">
+                  <div key={index} className="bg-white/5 p-6 rounded-lg border border-white/10">
+                    <h3 className="text-xl font-semibold mb-4 text-white">
+                      {index + 1}. {question.question}
+                    </h3>
+                    <div className="space-y-3">
                       {question.options.map((option, optIndex) => (
-                        <div key={optIndex} className="flex items-center">
-                          <input 
-                            type="radio" 
-                            name={`question-${index}`} 
-                            className="mr-2 bg-white/10 border-white/20"
-                          />
-                          <label className="text-gray-300">{option}</label>
-                        </div>
+                        <button
+                          key={optIndex}
+                          onClick={() => handleAnswerSelect(index, optIndex)}
+                          className={`w-full text-left p-4 rounded-lg transition-colors ${
+                            selectedAnswers[index] === optIndex
+                              ? optIndex === question.correctAnswer
+                                ? 'bg-green-500/20 border border-green-500'
+                                : 'bg-red-500/20 border border-red-500'
+                              : 'bg-white/10 hover:bg-white/20 border border-transparent'
+                          }`}
+                          disabled={showExplanations[index]}
+                        >
+                          <div className="flex items-center">
+                            <span className="mr-3">{String.fromCharCode(65 + optIndex)}.</span>
+                            <span className="text-gray-300">{option}</span>
+                            {showExplanations[index] && optIndex === question.correctAnswer && (
+                              <span className="ml-2 text-green-400">✓</span>
+                            )}
+                          </div>
+                        </button>
                       ))}
                     </div>
+                    
+                    {showExplanations[index] && (
+                      <div className="mt-4 p-4 rounded-lg bg-white/5 border border-white/10">
+                        <p className="text-sm text-blue-400 mb-1">Explanation:</p>
+                        <p className="text-gray-300">
+                          {question.explanation || `The correct answer is ${String.fromCharCode(65 + question.correctAnswer)}`}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 ))}
+                
+                {!score && deck.content.quiz.length > 0 && (
+                  <button
+                    onClick={() => setScore(calculateScore())}
+                    className="w-full px-6 py-3 bg-white text-black hover:bg-gray-100 rounded-lg font-medium transition-all"
+                  >
+                    Submit Quiz
+                  </button>
+                )}
               </div>
             )}
           </div>
