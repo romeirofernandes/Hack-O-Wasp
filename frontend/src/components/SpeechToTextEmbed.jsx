@@ -92,7 +92,7 @@ export const SpeechToTextEmbed = ({ summary = [], tldr = "", title = "Document",
   const getTopicEnhancement = async (topicText) => {
     try {
       setLoadingTopicDetails(true);
-      const response = await axios.post('http://localhost:8000/api/transcribe/enhance-topic', {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/transcribe/enhance-topic`, {
         topic: topicText,
         title
       });
@@ -161,7 +161,7 @@ export const SpeechToTextEmbed = ({ summary = [], tldr = "", title = "Document",
     try {
       const topicText = topics.find(t => t.id === selectedTopic)?.text || "";
       
-      const response = await axios.post('http://localhost:8000/api/transcribe', {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/transcribe`, {
         transcript,
         topic: topicText,
         title

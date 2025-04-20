@@ -216,7 +216,7 @@ const SpeechToText = () => {
       setLoadingTopicDetails(true);
       
       // Fix the API endpoint path to match the server.js route mounting
-      const response = await axios.post('http://localhost:8000/api/transcribe/enhance-topic', {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/transcribe/enhance-topic`, {
         topic: topicText,
         title
       });
@@ -263,7 +263,7 @@ const SpeechToText = () => {
     try {
       const topicText = getSelectedTopicText();
       
-      const response = await axios.post('http://localhost:8000/api/transcribe', {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/transcribe`, {
         transcript,
         topic: topicText,
         title

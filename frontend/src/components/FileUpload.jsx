@@ -13,13 +13,16 @@ export const FileUpload = ({ onUploadStart, onUploadComplete }) => {
         // Read file as ArrayBuffer
         const buffer = await file.arrayBuffer();
 
-        const response = await fetch("http://localhost:8000/api/upload", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/pdf",
-          },
-          body: buffer,
-        });
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/upload`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/pdf",
+            },
+            body: buffer,
+          }
+        );
 
         const data = await response.json();
         onUploadComplete(data, file.name);
