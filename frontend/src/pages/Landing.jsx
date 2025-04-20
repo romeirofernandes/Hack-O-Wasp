@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 
 const Landing = () => {
   const navigate = useNavigate();
-  const words = ["Growing", "Study"];
+  const words = ["Notes", "Study"];
 
   const testimonials = [
     {
